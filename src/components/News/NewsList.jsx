@@ -21,7 +21,7 @@ const NewsList = () => {
   );
 };
 
-export default NewsList; 
+export default NewsList;
 
 
 const NewsCard = styled.div`

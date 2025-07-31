@@ -22,7 +22,7 @@ const NewsPage = () => {
         <CategoryButtons />
         <AgoraLink />
       </ContentContainer>
-      <Footer/>
+      <Footer />
     </PageContainer>
   );
 };
