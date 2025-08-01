@@ -5,6 +5,7 @@ import NewsPage from './pages/News/NewsPage';
 import AgoraPage from './pages/Agora/AgoraPage';
 import TrendPage from './pages/Trend/TrendPage';
 import MyPage from './pages/My/MyPage';
+import NewsListPage from './pages/News/NewsListPage';
 
 function App() {
   return (
@@ -12,9 +13,10 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<NewsPage />} />
-          <Route path='/agora' element={<AgoraPage/>} />
-          <Route path='/trend' element={<TrendPage/>} />
-          <Route path='/my' element={<MyPage/>} />
+          <Route path='/agora' element={<AgoraPage />} />
+          <Route path='/trend' element={<TrendPage />} />
+          <Route path='/my' element={<MyPage />} />
+          <Route path='/news-list' element={<NewsListPage />} />
         </Routes>
       </Router>
     </Provider>
