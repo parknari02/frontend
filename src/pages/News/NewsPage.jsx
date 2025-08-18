@@ -1,11 +1,11 @@
 import styled from 'styled-components';
 import Header from '../../components/common/Header';
 import SearchBar from '../../components/common/SearchBar';
-import NewsList from '../../components/News/NewsList';
-import InterestChart from '../../components/News/InterestChart';
-import RecommendationCard from '../../components/News/RecommendationCard';
-import CategoryButtons from '../../components/News/CategoryButtons';
-import AgoraLink from '../../components/News/AgoraLink';
+import NewsList from '../../components/news/main/NewsList';
+import InterestChart from '../../components/news/main/InterestChart';
+import RecommendationCard from '../../components/news/main/RecommendationCard';
+import CategoryButtons from '../../components/news/main/CategoryButtons';
+import AgoraLink from '../../components/news/main/AgoraLink';
 import Footer from '../../components/common/Footer';
 
 const NewsPage = () => {
