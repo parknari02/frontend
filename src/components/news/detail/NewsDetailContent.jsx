@@ -1,7 +1,6 @@
 import { useLocation } from "react-router-dom";
+import { useState } from "react";
 import styled from "styled-components";
-
-
 
 
 const fallbackNews = {
@@ -14,6 +13,7 @@ const fallbackNews = {
 const NewsDetailPage = () => {
   const location = useLocation();
   const news = location.state || fallbackNews;
+  const [openSummary, setOpenSummary] = useState(false);
 
 
 
@@ -38,7 +38,8 @@ const NewsDetailPage = () => {
 
       <BodyText>{news.content}</BodyText>
 
-      <FixedButton>✶ AI 요약</FixedButton>
+      <FixedButton onClick={() => setOpenSummary(true)}>✶ AI 요약</FixedButton>
+      {openSummary && <SummaryModal />}
     </Wrapper>
   );
 };
@@ -100,11 +101,10 @@ const View = styled.span`
 `;
 
 const Thumbnail = styled.div`
-  width: 340px;
+  width: 100%;
   height: 168px;
   background-color: #D9D9D9;
-  border-radius: 0px;
-  margin: 0 auto 24px auto;
+  margin-bottom: 24px;
 `;
 
 const BodyText = styled.div`
@@ -121,10 +121,11 @@ const FixedButton = styled.button`
   border: none;
   color: white;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   font-style: Bold;
-  background: linear-gradient(180deg, #8484FF 40%, #0606FA 100%);
-  backdrop-filter: blur(2px);
+  border-radius: 40px;
+  background: linear-gradient(179deg, rgba(132, 132, 255, 0.24) 5.35%, rgba(6, 6, 250, 0.60) 142.35%), #FFF;
+  backdrop-filter: blur(1px);
   position: fixed;
   bottom: 24px;
   left: 50%;

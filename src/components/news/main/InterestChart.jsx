@@ -1,6 +1,6 @@
 import { Radar } from 'react-chartjs-2';
 import { Chart, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js';
-import { theme } from '../../styles/theme';
+import { theme } from '../../../styles/theme';
 import styled from 'styled-components';
 
 // Chart.js에 필요한 요소 등록

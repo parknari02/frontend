@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import Header from '../../components/common/Header';
 import SearchBar from '../../components/common/SearchBar';
-import NewsDetailList from '../../components/News/NewsDetailList';
+import NewsDetailList from '../../components/news/list/NewsDetailList';
 
 const NewsListPage = () => {
     return (
