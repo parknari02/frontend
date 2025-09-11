@@ -60,7 +60,6 @@ const TopMeta = styled.div`
 
 const Category = styled.span`
   font-size: 12px;
-  font-style: semibold;
   color: ${({ theme }) => theme.gray};
 `;
 
@@ -73,7 +72,6 @@ const Title = styled.span`
   color: ${({ theme }) => theme.gray};
   font-size: 24px;
   font-weight: 600;
-  font-style: SemiBold;
   margin-bottom: 32px;
   line-height: 1.4;
 `;
@@ -122,7 +120,6 @@ const FixedButton = styled.button`
   color: white;
   font-size: 12px;
   font-weight: 600;
-  font-style: Bold;
   border-radius: 40px;
   background: linear-gradient(179deg, rgba(132, 132, 255, 0.24) 5.35%, rgba(6, 6, 250, 0.60) 142.35%), #FFF;
   backdrop-filter: blur(1px);

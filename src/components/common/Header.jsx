@@ -1,14 +1,14 @@
 import styled from 'styled-components';
 
-const Header = () => {
+const Header = ({ content }) => {
   return (
     <HeaderContainer>
-      <Title>news</Title>
+      <Title>{content}</Title>
     </HeaderContainer>
   );
 };
 
-export default Header; 
+export default Header;
 
 const HeaderContainer = styled.header`
   text-align: center;

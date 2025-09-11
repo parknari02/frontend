@@ -1,19 +1,24 @@
 import Footer from "../../components/common/Footer";
 import styled from 'styled-components';
+import Header from "../../components/common/Header";
+import AgoraBanner from "../../components/agora/AgoraBanner";
+import AgoraList from "../../components/agora/AgoraList";
 
 const AgoraPage = () => {
-    return (
-      <PageContainer>
-        <p>아고라 페이지</p>
-        <Footer/>
-      </PageContainer>
-    );
-  };
-  
+  return (
+    <PageContainer>
+      <Header content='agora' />
+      <AgoraBanner />
+      <AgoraList />
+      <Footer />
+    </PageContainer>
+  );
+};
+
 export default AgoraPage;
 
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  padding: 0 26px 120px 26px;
+  padding: 0 0 120px 0;
 `;

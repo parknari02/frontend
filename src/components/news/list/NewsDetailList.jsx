@@ -78,7 +78,6 @@ const Title = styled.span`
     color: ${({ theme }) => theme.gray};
     font-weight: 600;
     font-size: 12px;
-    font-style: semi-bold;
 `;
 
 const Content = styled.span`
