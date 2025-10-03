@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import AgoraCard from './AgoraCard';
+import { useLocation, useNavigate } from 'react-router-dom'; // React Router 사용 시
+
 
 const agoraData = [
     {
@@ -36,16 +38,19 @@ const agoraData = [
     },
 ]
 
-const AgoraList = () => {
+const AgoraList = ({ onSelect, onCreate }) => {
+    const navigate = useNavigate();
+
     return (
-        <AgoraListContainer>
+        <AgoraListContainer >
             <AgoraListHeader>
                 <AgoraListTitle>진행중인 아고라</AgoraListTitle>
-                <CreateButton>아고라 생성하기</CreateButton>
+                <CreateButton onClick={onCreate}>아고라 생성하기</CreateButton>
             </AgoraListHeader>
             <AgoraCardList>
                 {agoraData.map(agora => (
-                    <AgoraCard key={agora.id} agora={agora} />
+                    <AgoraCard key={agora.id} agora={agora}
+                        onClick={() => onSelect(agora)} />
                 ))}
             </AgoraCardList>
         </AgoraListContainer>

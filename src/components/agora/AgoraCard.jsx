@@ -2,12 +2,12 @@ import styled from 'styled-components';
 import userProfileGray from '../../assets/icons/userProfileGray.svg';
 import timeGray from '../../assets/icons/timeGray.svg';
 
-const AgoraCard = ({ agora }) => {
+const AgoraCard = ({ agora, onClick }) => {
     return (
-        <AgoraCardContainer>
+        <AgoraCardContainer onClick={onClick}>
             <AgoraCardHeader>
                 <AgoraCardTitle>{agora.title}</AgoraCardTitle>
-                <AgoraCardStatus $status={agora.status}>{agora.status === 'waiting' ? '대기중' : '진행중'}</AgoraCardStatus>
+                <AgoraStatus $status={agora.status}>{agora.status === 'waiting' ? '대기중' : '진행중'}</AgoraStatus>
             </AgoraCardHeader>
 
             <AgoraCardDescription>
@@ -47,6 +47,7 @@ const AgoraCardContainer = styled.div`
     gap: 6px;
     box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.1);
     border-radius: 22px;
+    cursor: pointer;
 `;
 
 const AgoraCardHeader = styled.div`
@@ -61,7 +62,7 @@ const AgoraCardTitle = styled.span`
     color: ${({ theme }) => theme.gray};
 `;
 
-const AgoraCardStatus = styled.span`
+const AgoraStatus = styled.span`
     font-weight: 300;
     font-size: 10px;
     color: ${({ $status }) => $status === 'progress' ? '#F83001' : '#4DB985'};
@@ -123,3 +124,5 @@ const TagBadge = styled.span`
     font-weight: 300;
     font-size: 10px;
 `;
+
+export { AgoraStatus };

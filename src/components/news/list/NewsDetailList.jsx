@@ -1,32 +1,47 @@
 import styled from "styled-components";
+import { useState } from "react";
 
-const contentData = "금융 이슈 관련 내용 제목금융 이슈 관련 내용 제목금융 이슈 관련 내용 제목금융 이슈 관련 내용 제목";
+const contentData = "금융 이슈 관련 내용 제목금융 이슈 관련 내용 제목금융 이슈 관련 내용 제목금융 이슈 관련 내용 제목 금융 이슈 관련 내용 제목금융 이슈 관련 내용 제목금융 이슈 관련 내용 제목금융 이슈 관련 내용 제목";
 
 const newsDetailData = [
-    { category: '경제', title: '금융 이슈 관련 내용 제목', content: contentData, time: '30분 전' },
-    { category: '사회', title: '금융 이슈 관련 내용 제목', content: contentData, time: '1시간 전' },
-    { category: '스포츠', title: '금융 이슈 관련 내용 제목', content: contentData, time: '1일 전' },
-    { category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
-    { category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
-    { category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
-    { category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
-    { category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
-    { category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
-    { category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
-    { category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
+    { id: 1, category: '경제', title: '금융 이슈 관련 내용 제목', content: contentData, time: '30분 전' },
+    { id: 2, category: '사회', title: '금융 이슈 관련 내용 제목', content: contentData, time: '1시간 전' },
+    { id: 3, category: '스포츠', title: '금융 이슈 관련 내용 제목', content: contentData, time: '1일 전' },
+    { id: 4, category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
+    { id: 5, category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
+    { id: 6, category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
+    { id: 7, category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
+    { id: 8, category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
+    { id: 9, category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
+    { id: 10, category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
+    { id: 11, category: '정치', title: '금융 이슈 관련 내용 제목', content: contentData, time: '10분 전' },
 ];
 
-const NewsDetailList = () => {
+// onSelect : 아이템 클릭 시 실행할 함수 
+const NewsDetailList = ({ showTime = true, onSelect }) => {
+    const [selectedId, setSelectedId] = useState(null);
+
+    const handleItemClick = (id) => {
+        setSelectedId(id);
+        if (onSelect) {
+            onSelect(id);
+        }
+    }
+
     return (
         <NewsDetailListContainer>
             {newsDetailData.map((news, index) => (
-                <NewsDetailItem key={index}>
+                <NewsDetailItem
+                    key={index}
+                    onClick={() => handleItemClick(news.id)}
+                    $isSelected={selectedId === news.id}
+                >
                     <Category>{news.category}</Category>
                     <ContentContainer>
                         <Title>{news.title}</Title>
                         <Content>{news.content}</Content>
                     </ContentContainer>
-                    <Time>{news.time}</Time>
+                    {showTime && <Time>{news.time}</Time>} {/* 👈 조건부 렌더링 */}
                 </NewsDetailItem>
             ))}
 
@@ -52,9 +67,16 @@ const NewsDetailItem = styled.div`
     padding-bottom: 16px;
     height: 76px;
     width: 100%;
+    cursor: pointer;
+
     &:last-child {
         border-bottom: none;
     }
+
+    background: ${({ $isSelected, theme }) =>
+        $isSelected ? theme.lightGray : "#fff"};
+    
+    color: ${({ $isSelected }) => ($isSelected ? "#fff" : "#333")};
 `;
 
 const Category = styled.span`
@@ -85,6 +107,12 @@ const Content = styled.span`
     font-weight: 300;
     font-size: 12px;
     text-align: left;
+
+    display: -webkit-box; /* flexbox와 유사한 레이아웃 모드 */
+    -webkit-line-clamp: 3;   /* 최대 3줄 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 넘치는 부분 … 처리 */
 `;
 
 const Time = styled.span`
