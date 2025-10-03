@@ -7,7 +7,7 @@ const AgoraCard = ({ agora }) => {
         <AgoraCardContainer>
             <AgoraCardHeader>
                 <AgoraCardTitle>{agora.title}</AgoraCardTitle>
-                <AgoraCardStatus $status={agora.status}>{agora.status === 'waiting' ? '대기중' : '진행중'}</AgoraCardStatus>
+                <AgoraStatus $status={agora.status}>{agora.status === 'waiting' ? '대기중' : '진행중'}</AgoraStatus>
             </AgoraCardHeader>
 
             <AgoraCardDescription>
@@ -61,7 +61,7 @@ const AgoraCardTitle = styled.span`
     color: ${({ theme }) => theme.gray};
 `;
 
-const AgoraCardStatus = styled.span`
+const AgoraStatus = styled.span`
     font-weight: 300;
     font-size: 10px;
     color: ${({ $status }) => $status === 'progress' ? '#F83001' : '#4DB985'};
@@ -123,3 +123,5 @@ const TagBadge = styled.span`
     font-weight: 300;
     font-size: 10px;
 `;
+
+export { AgoraStatus };
