@@ -68,7 +68,10 @@ const NewsDetailPage = () => {
        </SummaryBox>  
       )}
 
-        
+      <ButtonContainer>
+        <AgoraButton>아고라 생성하기</AgoraButton>
+        <AgoraButton>아고라 참여하기</AgoraButton>
+      </ButtonContainer>
     </>
       
   );
@@ -175,8 +178,40 @@ const SummaryText = styled.p`
   line-height: normal;
   letter-spacing: 0.2px;
 
-
   margin: 0;
 
 
+`;
+const ButtonContainer = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 95px;
+`;
+
+const AgoraButton = styled.button`
+
+  width: 162px;
+  height: 42px;
+
+  border-radius: 5px;
+  background: #D9D9D9;
+  border: none;
+
+  color: #000;
+  text-align: center;
+  font-family: Pretendard;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: normal;
+  letter-spacing: 0.28px;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:active {
+    background-color: #cfcfcf;
+  }
 `;
