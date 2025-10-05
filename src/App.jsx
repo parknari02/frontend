@@ -8,6 +8,7 @@ import MyPage from './pages/my/MyPage';
 import NewsListPage from './pages/news/NewsListPage';
 import NewsDetailPage from './pages/news/NewsDetailPage';
 import AgoraCreatePage from './pages/agora/AgoraCreatePage';
+import AgoraChatPage from './pages/agora/AgoraChatPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path='/news-list' element={<NewsListPage />} />
           <Route path='/news-detail' element={<NewsDetailPage />} />
           <Route path='/agora/create' element={<AgoraCreatePage />} />
+          <Route path='/agora/chat/:agoraId' element={<AgoraChatPage />} />
         </Routes>
       </Router>
     </Provider>

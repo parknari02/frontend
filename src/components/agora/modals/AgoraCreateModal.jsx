@@ -3,6 +3,7 @@ import BaseModal from '../../common/BaseModal';
 import NewsDetailList from '../../news/list/NewsDetailList';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import ModalButton from '../../common/ModalButton';
 
 const AgoraCreateModal = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
@@ -28,11 +29,11 @@ const AgoraCreateModal = ({ isOpen, onClose }) => {
                     <NewsDetailList showTime={false} onSelect={handleSelectNews} />
                 </div>
                 <ButtonContainer>
-                    <Button variant="primary"
+                    <ModalButton variant="primary"
                         onClick={handleNavigate} // 선택된 뉴스 아이디로 네비게이트
                         disabled={!selectedNewsId} // selectedNewsId가 null이면 선택버튼 비활성화
-                    >선택</Button>
-                    <Button variant="secondary" onClick={onClose}>닫기</Button>
+                    >선택</ModalButton>
+                    <ModalButton variant="secondary" onClick={onClose}>닫기</ModalButton>
                 </ButtonContainer>
             </AgoraCreateModalContainer>
 
@@ -60,37 +61,4 @@ const ButtonContainer = styled.div`
     display: flex;
     gap: 16px;
     justify-content: space-between;
-`;
-
-const Button = styled.button`
-    border-radius: 12px;
-    width: 100%;
-    padding: 8px 36px;
-    cursor: pointer;
-
-    ${({ variant, theme }) => {
-        switch (variant) {
-            case "primary":
-                return `
-                background: rgba(132, 132, 255, 0.8);
-                color: #fff;
-                border: 0.5px solid ${theme.mainLight};
-                `;
-            case "secondary":
-                return `
-                background: #FFF;
-                color: ${theme.mainLight};
-                border: 0.5px solid ${theme.mainLight};
-                `;
-        }
-    }}
-
-    /* disabled 상태 스타일 */
-    &:disabled {
-        background: #ccc;
-        color: #777;
-        cursor: not-allowed;
-        border: none;
-        opacity: 0.7;
-    }
 `;

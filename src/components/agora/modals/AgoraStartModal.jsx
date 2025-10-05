@@ -3,6 +3,7 @@ import BaseModal from '../../common/BaseModal';
 import { AgoraStatus } from '../AgoraCard';
 import userProfileMain from '../../../assets/icons/userProfileMain.svg';
 import clockIcon from '../../../assets/icons/clock.svg';
+import ModalButton from '../../common/ModalButton';
 
 const AgoraStartModal = ({ isOpen, onClose, agora }) => {
     return (
@@ -70,8 +71,8 @@ const AgoraStartModal = ({ isOpen, onClose, agora }) => {
                 <Notice>* 참여, 관전 대기 중 방장이 시작을 누르면 아고라가 시작됩니다.</Notice>
 
                 <ButtonContainer>
-                    <Button variant="primary">관전하기</Button>
-                    <Button variant="secondary" onClick={onClose}>닫기</Button>
+                    <ModalButton variant="primary">관전하기</ModalButton>
+                    <ModalButton variant="secondary" onClick={onClose}>닫기</ModalButton>
                 </ButtonContainer>
 
             </AgoraStartModalContainer>

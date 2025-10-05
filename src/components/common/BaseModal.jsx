@@ -44,4 +44,9 @@ const ModalContent = styled.div`
     border-radius: 20px;
     width: 309px;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
 `;
