@@ -1,9 +1,6 @@
 import styled from 'styled-components';
 import AgoraCard from './AgoraCard';
-import { useLocation, useNavigate } from 'react-router-dom'; // React Router 사용 시
-
-import { useLocation, useNavigate } from 'react-router-dom'; // React Router 사용 시
-
+//import { useNavigate } from 'react-router-dom'; // React Router 사용 시
 
 const agoraData = [
     {
@@ -41,7 +38,7 @@ const agoraData = [
 ]
 
 const AgoraList = ({ onSelect, onCreate }) => {
-    const navigate = useNavigate();
+    //const navigate = useNavigate();
 
     return (
         <AgoraListContainer >
