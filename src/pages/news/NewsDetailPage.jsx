@@ -5,7 +5,7 @@ import NewsDetailContent from '../../components/news/detail/NewsDetailContent';
 const NewsDetailPage = () => {
   return (
     <>
-      <Header />
+      <Header content='news' />
       <NewsDetailContent />
     </>
   );

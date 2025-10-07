@@ -20,8 +20,8 @@ export default SearchBar;
 
 // bgColor props가 없을 경우 기본 theme 색상 사용
 const SearchInputWrapper = styled.label`
-  background-color: ${({ $bgColor, theme }) => $bgColor === 'transparent' ? 'transparent' : theme.mainLight};
-  border: ${({ $bgColor, theme }) => $bgColor === 'transparent' ? `1px solid ${theme.mainLight}` : 'none'};
+  background-color: ${({ $bgColor, theme }) => $bgColor === 'transparent' ? 'transparent' : theme.mainLightTransparent};
+  border: ${({ $bgColor, theme }) => $bgColor === 'transparent' ? `1px solid ${theme.mainLightTransparent}` : 'none'};
   border-radius: 40px;
   padding: 13px 20px;
   display: flex;
@@ -35,12 +35,12 @@ const SearchField = styled.input`
   border: none;
   outline: none;
   flex: 1;
-  color: ${({ $bgColor, theme }) => $bgColor === 'transparent' ? theme.mainLight : 'white'};
+  color: ${({ $bgColor, theme }) => $bgColor === 'transparent' ? theme.mainLightTransparent : 'white'};
   font-size: 12px;
   font-weight: 700;
 
   &::placeholder {
-    color: ${({ $bgColor, theme }) => $bgColor === 'transparent' ? theme.mainLight : 'white'};
+    color: ${({ $bgColor, theme }) => $bgColor === 'transparent' ? theme.mainLightTransparent : 'white'};
   }
 `;
 

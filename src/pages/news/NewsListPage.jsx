@@ -6,7 +6,7 @@ import NewsDetailList from '../../components/news/list/NewsDetailList';
 const NewsListPage = () => {
     return (
         <PageContainer>
-            <Header />
+            <Header content='news' />
             <ContentContainer>
                 <SearchBar bgColor="transparent" />
                 <NewsDetailList />
