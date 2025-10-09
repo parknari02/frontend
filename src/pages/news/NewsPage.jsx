@@ -11,7 +11,7 @@ import Footer from '../../components/common/Footer';
 const NewsPage = () => {
   return (
     <PageContainer>
-      <Header />
+      <Header content='news' />
       <ContentContainer>
         <SearchBar />
         <NewsList />

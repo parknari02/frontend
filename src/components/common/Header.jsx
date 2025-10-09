@@ -1,9 +1,9 @@
 import styled from 'styled-components';
 
-const Header = ({ title = "news", pb = 37 }) => {
+const Header = ({ content }) => {
   return (
-    <HeaderContainer pb={pb}>
-      <Title>{title}</Title>
+    <HeaderContainer>
+      <Title isKorean={/^[가-힣]/.test(content)}>{content}</Title>
     </HeaderContainer>
   );
 };
@@ -26,9 +26,10 @@ const Title = styled.h1`
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-fill-color: transparent;
-  font-family: 'godoRoundedR';
+  font-family: ${({ isKorean }) => (isKorean ? "'ABeeZee'" : "'godoRoundedR'")};
   font-weight: 400;
   font-size: 28px;
+  font-size: ${({ isKorean }) => (isKorean ? '15px' : '28px')};
   text-transform: lowercase;
   letter-spacing: 0.02em;
   margin: 0;
