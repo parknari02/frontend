@@ -13,7 +13,7 @@ export default Header;
 const HeaderContainer = styled.header`
   text-align: center;
   padding-top: 10px;
-  padding-bottom: ${({ pb }) => `${pb}px`};
+  padding-bottom: 24px;
 `;
 
 const Title = styled.h1`

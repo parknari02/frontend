@@ -3,12 +3,12 @@ import styled from 'styled-components';
 const RecommendationCard = () => {
   return (
     <CardContainer>
-      <RecommendationTitle>유한솔 님을 위한 <br/> 기사 추천</RecommendationTitle>
+      <RecommendationTitle>관심분야 관련 일러스트?</RecommendationTitle>
     </CardContainer>
   );
 };
 
-export default RecommendationCard; 
+export default RecommendationCard;
 
 const CardContainer = styled.div`
   background: linear-gradient(167.29deg, rgba(6, 6, 250, 0.6) 26.37%, rgba(132, 132, 255, 0.24) 128.67%);

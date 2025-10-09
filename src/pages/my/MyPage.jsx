@@ -2,6 +2,8 @@
 import styled from "styled-components";
 import Footer from "../../components/common/Footer";
 import Header from "../../components/common/Header";
+import InterestChart from "../../components/news/main/InterestChart";
+import RecommendationCard from "../../components/news/main/RecommendationCard";
 
 const dummyArticles = [
   { id: 1, category: "경제", title: "금융 이슈 관련 내용 제목", preview: "금융 이슈 관련 내용 제목금융 이슈 관련 내용 금융 이슈 관련 내용 제목금융 이슈 관련 내용 금융 이슈 관련 내용 제목금융 이슈 관련 내용" },
@@ -18,9 +20,7 @@ const MyPage = () => {
   return (
     <PageContainer>
       <Inner>
-        {/* 섹션: my */}
-        <Header title='my' pb={24} />
-        {/* 프로필 카드 */}
+        <Header content='my' />
         <ProfileCard>
           <Avatar src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=400" />
           <ProfileTexts>
@@ -29,10 +29,13 @@ const MyPage = () => {
             <Interests>(관심분야) 정치 / 경제</Interests>
           </ProfileTexts>
         </ProfileCard>
-        <Header title="archive" pb={18} />
+        <ContentSection>
+          <InterestChart />
+          <RecommendationCard />
+        </ContentSection>
         <ListCard>
           {dummyArticles.map((a) => (
-            <Item key={a.id}>
+            <Item key={a.id} isLast={a.id === dummyArticles.length}>
               <LeftLabel>{a.category}</LeftLabel>
               <RightCol>
                 <ItemTitle>{a.title}</ItemTitle>
@@ -50,7 +53,6 @@ const MyPage = () => {
 
 export default MyPage;
 
-/* ===== styled-components ===== */
 const PageContainer = styled.div`
   min-height: 100vh;
   background: #ffffff;
@@ -58,18 +60,14 @@ const PageContainer = styled.div`
   padding: 0 0 120px 0;
 `;
 
-/* 좌우 여백은 여기서만 관리 */
 const Inner = styled.div`
   padding: 0 26px;
 `;
 
-const SectionTitle = styled.h2`
-  margin: 18px 0 10px;
-  text-align: center;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: #8c84ff; /* 보라톤 */
+const ContentSection = styled.div`
+  display: flex;
+  height: 100%;
+  gap: 20px;
 `;
 
 /* 프로필 카드 */
@@ -81,7 +79,7 @@ const ProfileCard = styled.div`
   border-radius: 22px;
   background: #FFF;
   box-shadow: 0 1px 10px 0 rgba(0, 0, 0, 0.10);
-  margin-bottom: 14px;
+  margin-bottom: 24px;
 `;
 
 const Avatar = styled.img`
@@ -116,6 +114,7 @@ const Interests = styled.span`
 
 /* 리스트 카드 */
 const ListCard = styled.div`
+  margin-top: 24px;
   padding: 8px 28px;  
   border-radius: 22px;
   background: #FFF;
@@ -127,7 +126,10 @@ const Item = styled.div`
   padding: 16px 0px;
   gap: 31px;
   color: #888;
-  border-bottom: 0.1px solid #888;
+  border-bottom: 0.1px solid #D9D9D9;
+  ${({ isLast }) => isLast && `
+    border-bottom: none;
+  `}
 `;
 
 const LeftLabel = styled.div`
