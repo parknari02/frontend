@@ -121,9 +121,3 @@ const ListCard = styled.div`
   background: #FFF;
   box-shadow: 0 1px 10px 0 rgba(0, 0, 0, 0.10);
 `;
-
-const Divider = styled.div`
-  height: 1px;
-  background: #eceef3;
-  margin: 12px 0 0;
-`;

@@ -1,21 +1,21 @@
 import styled from 'styled-components';
 
 const ListItem = ({ category, title, preview, time, isLast = false }) => {
-    return (
-        <Item isLast={isLast}>
-            <LeftLabel>{category}</LeftLabel>
-            <RightCol>
-                {time && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                        <ItemTitle>{title}</ItemTitle>
-                        <ItemTime>{time}</ItemTime>
-                    </div>
-                )}
-                {!time && <ItemTitle>{title}</ItemTitle>}
-                <ItemPreview>{preview}</ItemPreview>
-            </RightCol>
-        </Item>
-    );
+  return (
+    <Item isLast={isLast}>
+      <LeftLabel>{category}</LeftLabel>
+      <RightCol>
+        {time && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <ItemTitle>{title}</ItemTitle>
+            <ItemTime>{time}</ItemTime>
+          </div>
+        )}
+        {!time && <ItemTitle>{title}</ItemTitle>}
+        <ItemPreview>{preview}</ItemPreview>
+      </RightCol>
+    </Item>
+  );
 };
 
 export default ListItem;
@@ -23,7 +23,6 @@ export default ListItem;
 const Item = styled.div`
   display: flex;
   padding: 16px 0px;
-  gap: 31px;
   color: #888;
   border-bottom: 0.1px solid #D9D9D9;
   ${({ isLast }) => isLast && `
@@ -35,6 +34,7 @@ const LeftLabel = styled.div`
   display: flex;
   font-size: 12px;
   white-space: nowrap;
+  width: 150px;
 `;
 
 const RightCol = styled.div`
