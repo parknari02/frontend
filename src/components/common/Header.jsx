@@ -13,11 +13,15 @@ export default Header;
 const HeaderContainer = styled.header`
   text-align: center;
   padding-top: 10px;
-  padding-bottom: 37px;
+  padding-bottom: 24px;
 `;
 
 const Title = styled.h1`
-  background: linear-gradient(180deg, rgba(6, 6, 250, 0.6) 27.08%, rgba(132, 132, 255, 0.24) 143.75%);
+  background: linear-gradient(
+    180deg,
+    rgba(6, 6, 250, 0.6) 27.08%,
+    rgba(132, 132, 255, 0.24) 143.75%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
