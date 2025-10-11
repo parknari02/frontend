@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store';
-import NewsPage from './pages/News/NewsPage';
+import NewsPage from './pages/news/NewsPage';
 import AgoraPage from './pages/agora/AgoraPage';
 import TrendPage from './pages/trend/TrendPage';
 import MyPage from './pages/my/MyPage';
-import NewsListPage from './pages/News/NewsListPage';
-import NewsDetailPage from './pages/News/NewsDetailPage';
+import NewsListPage from './pages/news/NewsListPage';
+import NewsDetailPage from './pages/news/NewsDetailPage';
 import AgoraCreatePage from './pages/agora/AgoraCreatePage';
 import AgoraChatPage from './pages/agora/AgoraChatPage';
 
