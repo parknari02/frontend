@@ -1,5 +1,6 @@
 import Footer from "../../components/common/Footer";
 import Header from "../../components/common/Header";
+import ListItem from "../../components/common/ListItem";
 import styled from 'styled-components';
 import { useState } from 'react';
 import SearchBar from "../../components/common/SearchBar";
@@ -50,16 +51,14 @@ const TrendPage = () => {
       </ContentSection>
       <ListCard>
         {dummyArticles.map((a) => (
-          <Item key={a.id} isLast={a.id === dummyArticles.length}>
-            <LeftLabel>{a.category}</LeftLabel>
-            <RightCol>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                <ItemTitle>{a.title}</ItemTitle>
-                <ItemTime>{a.time}</ItemTime>
-              </div>
-              <ItemPreview>{a.preview}</ItemPreview>
-            </RightCol>
-          </Item>
+          <ListItem
+            key={a.id}
+            category={a.category}
+            title={a.title}
+            preview={a.preview}
+            time={a.time}
+            isLast={a.id === dummyArticles.length}
+          />
         ))}
       </ListCard>
       <Footer />
@@ -169,45 +168,4 @@ const ListCard = styled.div`
   border-radius: 22px;
   background: #FFF;
   box-shadow: 0 1px 10px 0 rgba(0, 0, 0, 0.10);
-`;
-
-const Item = styled.div`
-  display: flex;
-  padding: 16px 0px;
-  gap: 31px;
-  color: #888;
-  border-bottom: 0.1px solid #D9D9D9;
-  ${({ isLast }) => isLast && `
-    border-bottom: none;
-  `}
-`;
-
-const LeftLabel = styled.div`
-  display: flex;
-  font-size: 12px;
-  white-space: nowrap;
-`;
-
-const RightCol = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const ItemTitle = styled.div`
-  font-size: 12px;
-  font-weight: 600;
-  color: #888;
-`;
-
-const ItemPreview = styled.p`
-  font-size: 12px;
-  line-height: normal;
-  color: #888;
-`;
-
-const ItemTime = styled.p`
-  font-size: 10px;
-  line-height: normal;
-  color: #9aa0a6;
-  margin-bottom: 2px;
 `;

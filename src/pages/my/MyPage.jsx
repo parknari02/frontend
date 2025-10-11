@@ -2,6 +2,7 @@
 import styled from "styled-components";
 import Footer from "../../components/common/Footer";
 import Header from "../../components/common/Header";
+import ListItem from "../../components/common/ListItem";
 import InterestChart from "../../components/news/main/InterestChart";
 import RecommendationCard from "../../components/news/main/RecommendationCard";
 
@@ -35,13 +36,13 @@ const MyPage = () => {
         </ContentSection>
         <ListCard>
           {dummyArticles.map((a) => (
-            <Item key={a.id} isLast={a.id === dummyArticles.length}>
-              <LeftLabel>{a.category}</LeftLabel>
-              <RightCol>
-                <ItemTitle>{a.title}</ItemTitle>
-                <ItemPreview>{a.preview}</ItemPreview>
-              </RightCol>
-            </Item>
+            <ListItem
+              key={a.id}
+              category={a.category}
+              title={a.title}
+              preview={a.preview}
+              isLast={a.id === dummyArticles.length}
+            />
           ))}
         </ListCard>
       </Inner>
@@ -119,45 +120,6 @@ const ListCard = styled.div`
   border-radius: 22px;
   background: #FFF;
   box-shadow: 0 1px 10px 0 rgba(0, 0, 0, 0.10);
-`;
-
-const Item = styled.div`
-  display: flex;
-  padding: 16px 0px;
-  gap: 31px;
-  color: #888;
-  border-bottom: 0.1px solid #D9D9D9;
-  ${({ isLast }) => isLast && `
-    border-bottom: none;
-  `}
-`;
-
-const LeftLabel = styled.div`
-  display: flex;
-  font-size: 12px;
-  white-space: nowrap;
-`;
-
-const RightCol = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const ItemTitle = styled.div`
-  font-size: 12px;
-  font-weight: 600;
-  color: #888;
-`;
-
-const ItemPreview = styled.p`
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: normal;
-  color: #888;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;  /* 두 줄 말줄임 */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 `;
 
 const Divider = styled.div`
