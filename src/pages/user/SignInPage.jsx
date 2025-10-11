@@ -110,6 +110,7 @@ const StyledInput = styled.input`
   padding: 4px 0;
 
   &::placeholder {
+    font-weight: 400;
     color: #b9bbcc;
   }
 

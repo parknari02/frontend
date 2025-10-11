@@ -10,6 +10,7 @@ import NewsDetailPage from './pages/news/NewsDetailPage';
 import AgoraCreatePage from './pages/agora/AgoraCreatePage';
 import AgoraChatPage from './pages/agora/AgoraChatPage';
 import SignInPage from './pages/user/SignInPage';
+import SignUpPage from './pages/user/SignUpPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<NewsPage />} />
           <Route path="/signin" element={<SignInPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
           <Route path='/agora' element={<AgoraPage />} />
           <Route path='/trend' element={<TrendPage />} />
           <Route path='/my' element={<MyPage />} />
