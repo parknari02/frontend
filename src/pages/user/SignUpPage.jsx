@@ -1,12 +1,17 @@
-// src/pages/auth/SignUpPage.jsx
 import { useMemo, useState } from "react";
 import styled from "styled-components";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUpPage() {
+    const BASE_URL = import.meta.env.VITE_API_URL;
+    const navigate = useNavigate();
+
     const [name, setName] = useState("");
     const [userId, setUserId] = useState("");
     const [pw, setPw] = useState("");
     const [pw2, setPw2] = useState("");
+    const [loading, setLoading] = useState(false);
 
     // 간단 유효성 체크
     const pwMinLen = 6;
@@ -18,12 +23,24 @@ export default function SignUpPage() {
         return Boolean(isFilled && isPwLongEnough && isPwMatch);
     }, [isFilled, isPwLongEnough, isPwMatch]);
 
-    const onSubmit = (e) => {
+    const onSubmit = async (e) => {
         e.preventDefault();
-        if (!isValid) return;
-        // TODO: 회원가입 API 호출
-        // ex) await signUp({ name, userId, pw });
-        alert("회원가입 요청 전송! (API 연동 지점)");
+        if (!isValid || loading) return;
+
+        setLoading(true);
+        try {
+            const res = await axios.post(`${BASE_URL}/api/register`, {
+                username: userId,
+                password: pw,
+                nickname: name,
+            });
+            console.log(res)
+            navigate("/signin"); // ← React Router v6
+        } catch (error) {
+            console.error("❌ 회원가입 실패:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -39,6 +56,7 @@ export default function SignUpPage() {
                             onChange={(e) => setName(e.target.value)}
                             autoCapitalize="none"
                             autoComplete="name"
+                            disabled={loading}
                         />
                     </InputRow>
 
@@ -50,6 +68,7 @@ export default function SignUpPage() {
                             onChange={(e) => setUserId(e.target.value)}
                             autoCapitalize="none"
                             autoComplete="username"
+                            disabled={loading}
                         />
                     </InputRow>
 
@@ -61,6 +80,7 @@ export default function SignUpPage() {
                             value={pw}
                             onChange={(e) => setPw(e.target.value)}
                             autoComplete="new-password"
+                            disabled={loading}
                         />
                     </InputRow>
 
@@ -72,10 +92,10 @@ export default function SignUpPage() {
                             value={pw2}
                             onChange={(e) => setPw2(e.target.value)}
                             autoComplete="new-password"
+                            disabled={loading}
                         />
                     </InputRow>
 
-                    {/* 간단한 유효성 피드백 */}
                     <HintArea>
                         {!isPwLongEnough && pw.length > 0 && (
                             <Hint>비밀번호는 최소 {pwMinLen}자 이상이어야 합니다.</Hint>
@@ -85,16 +105,14 @@ export default function SignUpPage() {
                         )}
                     </HintArea>
 
-                    <PrimaryButton type="submit" disabled={!isValid}>
-                        회원가입
+                    <PrimaryButton type="submit" disabled={!isValid || loading}>
+                        {loading ? "가입 중..." : "회원가입"}
                     </PrimaryButton>
                 </Form>
             </Inner>
         </Wrap>
     );
 }
-
-/* ================== styles ================== */
 
 const Wrap = styled.div`
   min-height: 100vh;
@@ -112,7 +130,7 @@ const Wrap = styled.div`
 
 const Inner = styled.div`
   width: 100%;
-  max-width: 420px; /* 모바일 기준 */
+  max-width: 420px;
   padding: 50px;
 `;
 
@@ -121,7 +139,6 @@ const Logo = styled.h1`
   text-align: center;
   font-size: 64px;
   font-weight: 400;
-  letter-spacing: 8px;
   text-transform: lowercase;
   background: linear-gradient(
     180deg,
@@ -132,8 +149,6 @@ const Logo = styled.h1`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 60px;
-  line-height: normal;
-  letter-spacing: 1.28px;
 `;
 
 const Form = styled.form`
@@ -192,7 +207,7 @@ const HintArea = styled.div`
 
 const Hint = styled.div`
   font-size: 12px;
-  color: #a06; /* 보라 포인트 */
+  color: #a06;
   margin-top: 2px;
 `;
 
@@ -205,7 +220,7 @@ const PrimaryButton = styled.button`
   padding: 14px 0;
   font-size: 14px;
   width: 120px;
-  align-self: center; /* 중앙 정렬 */
+  align-self: center;
   cursor: pointer;
   transition: all 0.25s ease;
   margin-bottom: 120px;
@@ -214,10 +229,6 @@ const PrimaryButton = styled.button`
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(130, 133, 255, 0.4);
-  }
-
-  &:active {
-    transform: translateY(1px);
   }
 
   &:disabled {
