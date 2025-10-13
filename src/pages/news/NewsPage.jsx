@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import styled from 'styled-components';
 import Header from '../../components/common/Header';
 import SearchBar from '../../components/common/SearchBar';
@@ -5,6 +6,7 @@ import NewsList from '../../components/news/main/NewsList';
 import AgoraLink from '../../components/news/main/AgoraLink';
 import Footer from '../../components/common/Footer';
 import ListItem from '../../components/common/ListItem';
+import api from '../../api/api';
 
 const dummyArticles = [
   { id: 1, time: "30분 전", category: "경제", title: "금융 이슈 관련 내용 제목", preview: "금융 이슈 관련 내용 제목금융 이슈 관련 내용 금융 이슈 관련 내용 제목금융 이슈 관련 내용 금융 이슈 관련 내용 제목금융 이슈 관련 내용" },
@@ -19,6 +21,19 @@ const dummyArticles = [
 
 
 const NewsPage = () => {
+  async function getRecommendAritcle() {
+    try {
+      const res = await api.get("/api/recommend/article");
+      console.log(res.data);
+    } catch (err) {
+      console.error("API 요청 실패:", err);
+    }
+  }
+
+  useEffect(() => {
+    getRecommendAritcle()
+  }, [])
+
   return (
     <PageContainer>
       <Header content='news' />
