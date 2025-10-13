@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import Header from '../../components/common/Header';
 import SearchBar from '../../components/common/SearchBar';
@@ -14,6 +15,8 @@ const NewsDetailPage = () => {
   const [bookmarked, setBookmarked] = useState(false);
   const [openSummary, setOpenSummary] = useState(false);
   const summaryRef = useRef(null);
+
+  const navigate = useNavigate(); 
 
   const toggleBookmark = () => setBookmarked(v => !v);
   const handleKey = (e) => {
@@ -69,8 +72,8 @@ const NewsDetailPage = () => {
       )}
 
       <ButtonContainer>
-        <AgoraButton>아고라 생성하기</AgoraButton>
-        <AgoraButton>아고라 참여하기</AgoraButton>
+        <AgoraButton> 아고라 생성하기 </AgoraButton>
+        <AgoraButton onClick={() => navigate('/agora/participate')}> 아고라 참여하기 </AgoraButton>
       </ButtonContainer>
     </>
       
@@ -127,6 +130,7 @@ const BookmarkImg = styled.img`
 `;
 
 const SummaryBox = styled.div`
+
   position: fixed; 
   width: 340px;
   height: auto;
