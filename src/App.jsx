@@ -107,6 +107,14 @@ function App() {
               </PublicOnly>
             }
           />
+          <Route
+            path="/agora/participate"
+            element={
+              <RequireAuth>
+                <AgoraParticipatePage />
+              </RequireAuth>
+            }
+          />
           <Route path="*" element={<Navigate to={isAuthed() ? "/" : "/signin"} replace />} />
         </Routes>
       </Router>
