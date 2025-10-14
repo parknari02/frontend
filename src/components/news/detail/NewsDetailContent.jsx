@@ -1,8 +1,7 @@
 import { useLocation } from "react-router-dom";
+import { useState } from "react";
 import styled from "styled-components";
 import BottomBar from "../../components/News/BottomBar";
-
-
 
 
 const fallbackNews = {
@@ -24,6 +23,7 @@ const fallbackNews = {
 const NewsDetailPage = () => {
   const location = useLocation();
   const news = location.state || fallbackNews;
+  const [openSummary, setOpenSummary] = useState(false);
 
 
 
@@ -50,6 +50,7 @@ const NewsDetailPage = () => {
 
       <BottomBar />
       
+
     </Wrapper>
   );
 };
@@ -70,7 +71,6 @@ const TopMeta = styled.div`
 
 const Category = styled.span`
   font-size: 12px;
-  font-style: semibold;
   color: ${({ theme }) => theme.gray};
 `;
 
@@ -83,7 +83,6 @@ const Title = styled.span`
   color: ${({ theme }) => theme.gray};
   font-size: 24px;
   font-weight: 600;
-  font-style: SemiBold;
   margin-bottom: 32px;
   line-height: 1.4;
   `;
@@ -111,11 +110,10 @@ const View = styled.span`
 `;
 
 const Thumbnail = styled.div`
-  width: 340px;
+  width: 100%;
   height: 168px;
   background-color: #D9D9D9;
-  border-radius: 0px;
-  margin: 0 auto 24px auto;
+  margin-bottom: 24px;
 `;
 
 const BodyText = styled.div`
@@ -130,8 +128,22 @@ const FixedButton = styled.button`
   height: 40px;
   flex-shrink: 0;
   border-radius: 40px;
+
+  border: none;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 40px;
   background: linear-gradient(179deg, rgba(132, 132, 255, 0.24) 5.35%, rgba(6, 6, 250, 0.60) 142.35%), #FFF;
   backdrop-filter: blur(1px);
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
 `;
 
 
