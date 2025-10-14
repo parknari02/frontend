@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import AiButton from "./AiButton";
-import memoIcon from "../../assets/icons/memo.png";
-import wordIcon from "../../assets/icons/word.png";
+import memoIcon from "../../../assets/icons/memo.png";
+import wordIcon from "../../../assets/icons/word.png";
 import MemoModal from "./MemoModal";
 import WordModal from "./WordModal";
 

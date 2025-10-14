@@ -11,6 +11,7 @@ import AgoraCreatePage from './pages/agora/AgoraCreatePage';
 import AgoraChatPage from './pages/agora/AgoraChatPage';
 import SignInPage from './pages/user/SignInPage';
 import SignUpPage from './pages/user/SignUpPage';
+import AgoraParticipatePage from './pages/agora/AgoraParticipatePage'
 
 const isAuthed = () => !!localStorage.getItem('accessToken');
 

@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import styled from "styled-components";
-import BottomBar from "../../components/News/BottomBar";
+import BottomBar from "../main/BottomBar";
 
 
 const fallbackNews = {
