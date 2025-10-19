@@ -20,9 +20,8 @@ const fallbackNews = {
 };
 
 
-const NewsDetailPage = () => {
-  const location = useLocation();
-  const news = location.state || fallbackNews;
+const NewsDetailContent = ({ article }) => {
+  const news = article || fallbackNews;
   const [openSummary, setOpenSummary] = useState(false);
 
 
@@ -31,32 +30,71 @@ const NewsDetailPage = () => {
     <Wrapper>
 
       <TopMeta>
-        <Category>{news.category}</Category>
-        <Date>2025. 7. 23.(수) 19:35</Date>
+        <Category>{news.articleCategory}</Category>
+        <PublishDate>{formatDate(news.publishDate)}</PublishDate>
       </TopMeta>
       <Divider />
 
 
-      <Title>{news.title}</Title>
+      {/* // <b>, <i> 등 HTML 태그까지 그대로 보여주고 싶을 때 
+        // <b>, <i> 등 HTML 태그까지 그대로 보여주고 싶을 때
+        // JSX에서 직접 HTML을 렌더링하려면 dangerouslySetInnerHTML을 사용해야 함
+      */}
+      <Title dangerouslySetInnerHTML={{ __html: decodeHtmlEntities(news.title) }} />
 
       <SubMeta>
-        <Author>무슨일보 / 누구누구 기자</Author>
-        <View>view <strong>5,203</strong></View>
+        <Author>출처: {news.link ? <a href={news.link}>원문 링크</a> : "알 수 없음"}</Author>
+        <View>view <strong>{news.viewCount}</strong></View>
       </SubMeta>
 
-      <Thumbnail />
+      {/* <Thumbnail /> */}
 
       <BodyText>{news.content}</BodyText>
 
       <BottomBar />
-      
+
 
     </Wrapper>
   );
 };
 
-export default NewsDetailPage;
+export default NewsDetailContent;
 
+// 날짜 포맷 함수
+function formatDate(dateInput) {
+  if (!dateInput) return "";
+
+  let date;
+
+  // 배열 형태인 경우 [YYYY, MM, DD, hh?, mm?]
+  if (Array.isArray(dateInput)) {
+    const [year, month, day, hour = 0, minute = 0] = dateInput;
+    date = new Date(year, month - 1, day, hour, minute);
+  }
+  // 문자열 형태인 경우 (기존 방식 유지)
+  else {
+    date = new Date(dateInput);
+  }
+
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // 0부터 시작하니까 +1
+  const day = date.getDate();
+  const weekday = days[date.getDay()];
+
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}. ${month}. ${day}.(${weekday}) ${hours}:${minutes}`;
+}
+
+// HTML 엔티티(&quot;, &amp; 등)을 실제 문자로 복호화하는 함수
+function decodeHtmlEntities(str) {
+  const txt = document.createElement("textarea");
+  txt.innerHTML = str;
+  return txt.value;
+}
 
 const Wrapper = styled.div`
   padding: 24px;
@@ -74,7 +112,7 @@ const Category = styled.span`
   color: ${({ theme }) => theme.gray};
 `;
 
-const Date = styled.span`
+const PublishDate = styled.span`
   font-size: 12px;
   color: ${({ theme }) => theme.gray};
 `;
@@ -100,6 +138,16 @@ const SubMeta = styled.div`
 const Author = styled.span`
   font-size: 12px;
   color: ${({ theme }) => theme.gray};
+
+  a {
+    color: #8484ff;          /* 링크 색상 */
+    margin-left: 4px;        /* '출처:'와 간격 */
+    transition: color 0.2s ease;
+
+    &:hover {
+      text-decoration: underline; /* 호버 시 밑줄 표시 */
+    }
+  }
 `;
 
 
