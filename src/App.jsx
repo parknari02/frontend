@@ -69,7 +69,7 @@ function App() {
             }
           />
           <Route
-            path="/news-detail"
+            path="/news/:articleId"
             element={
               <RequireAuth>
                 <NewsDetailPage />

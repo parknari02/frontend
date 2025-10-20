@@ -8,11 +8,41 @@ import bookmark_outline from "../../assets/icons/bookmark_outline.png";
 import bookmark_filled from "../../assets/icons/bookmark_filled.png";
 import AiButton from '../../components/news/main/AiButton';
 
+import { useParams } from 'react-router-dom';
+import api from '../../api/api';
+
+const mockArticle = {
+  id: 1,
+  title: "AI 기술이 바꾸는 미래 산업 구조",
+  content: `인공지능(AI) 기술의 발전은 전 세계 산업 구조를 빠르게 재편하고 있습니다.
+특히 금융, 의료, 제조 분야에서 자동화와 데이터 기반 의사결정이 가속화되고 있으며,
+AI 윤리와 데이터 보안 문제에 대한 논의도 활발히 진행 중입니다.
+
+한국은 글로벌 AI 경쟁력 강화 전략을 수립하며,
+정부 차원의 인재 양성과 투자 확대를 추진하고 있습니다.`,
+  summary: "AI 기술의 발전이 산업 구조를 변화시키고 있으며, 정부의 전략적 대응이 강조되고 있다.",
+  articleCategory: "IT/과학",
+  link: "https://example.com/article/ai-future",
+  likeCount: 42,
+  viewCount: 5300,
+  publishDate: "2025-07-23T10:35:00.000Z",
+};
+
 
 const NewsDetailPage = () => {
   const [bookmarked, setBookmarked] = useState(false);
+
   const [openSummary, setOpenSummary] = useState(false);
+  const [keywords, setKeywords] = useState([]);      // 핵심 단어 결과
+  const [keywordsLoading, setKeywordsLoading] = useState(false); // 로딩 상태
+  const [keywordsError, setKeywordsError] = useState(null);      // 에러 상태
+
+  const [article, setArticle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const summaryRef = useRef(null);
+
+  const { articleId } = useParams();
 
   const toggleBookmark = () => setBookmarked(v => !v);
   const handleKey = (e) => {
@@ -25,7 +55,7 @@ const NewsDetailPage = () => {
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (summaryRef.current && !summaryRef.current.contains(e.target)) {
-        setOpenSummary(false); 
+        setOpenSummary(false);
       }
     };
 
@@ -36,6 +66,73 @@ const NewsDetailPage = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [openSummary]);
+
+  // 기사 데이터 불러오기
+  async function getArticle() {
+    try {
+      const res = await api.get(`/api/articles/${articleId}`);
+      console.log("기사 상세 조회 API 요청 성공:", res.data.response);
+      setArticle(res.data.response);
+    } catch (err) {
+      console.error("API 요청 실패:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+  useEffect(() => {
+    if (articleId) getArticle();
+  }, [articleId])
+
+  // 기사 핵심 단어 불러오기 
+  async function getMainKeywords() {
+    // 이미 핵심 단어가 있으면 재요청하지 않음
+    if (keywords.length > 0) {
+      return;
+    }
+
+    setKeywordsLoading(true);
+    setKeywordsError(null);
+
+    try {
+      const res = await api.get(`/api/articles/${articleId}/core/word`);
+      console.log("핵심 단어 API 요청 성공:", res.data.response.coreWordList);
+      setKeywords(res.data.response.coreWordList);
+      setOpenSummary(true);
+    } catch (err) {
+      console.error("❌ 핵심 단어 요청 실패:", err);
+      setKeywordsError("핵심 단어를 불러오지 못했습니다.");
+    } finally {
+      setKeywordsLoading(false);
+    }
+  }
+
+  // 기사 스크랩 하기 
+  async function toggleScrap() {
+    // 이미 스크랩된 상태이면 해제 요청
+    if (bookmarked) {
+      setBookmarked(false);
+      try {
+        const res = await api.delete(`/api/articles/${articleId}/scrap`);
+        console.log("스크랩 취소 API 요청 성공:", res.data);
+      } catch (err) {
+        console.error("❌ 스크랩 취소 요청 실패:", err);
+      }
+    }
+    // 스크랩되지 않은 상태이면 스크랩 요청
+    else {
+      setBookmarked(true);
+      try {
+        const res = await api.post(`/api/articles/${articleId}/scrap`,
+          {
+            memo: ""
+          }
+        );
+        console.log("스크랩 API 요청 성공:", res.data);
+      } catch (err) {
+        console.error("❌ 스크랩 요청 실패:", err);
+      }
+    }
+  }
 
   return (
     <>
@@ -48,28 +145,32 @@ const NewsDetailPage = () => {
           role="button"
           aria-pressed={bookmarked}
           tabIndex={0}
-          onClick={toggleBookmark}
+          onClick={toggleScrap}
           onKeyDown={handleKey}
           draggable={false}
         />
       </HeaderContainer>
-      <NewsDetailContent />
-      <AiButton onClick={() => setOpenSummary(v => !v)} />
+      <NewsDetailContent article={article} />
+      <AiButton onClick={() => setOpenSummary((v) => !v)} />
 
 
 
       {openSummary && (
-        <SummaryBox ref = {summaryRef}>
+        <SummaryBox ref={summaryRef}>
           <SummaryTitle>AI 요약</SummaryTitle>
           <SummaryText>
-            스포츠와 뭐에 관련된 기사입니다. 주로 케이티위즈가 야구를 못한다고 하고, 진짜 경기를 왜 그렇게 하는지 답답합니다. 이럴 거면 내가 뛸게 그냥. 응?스포츠와 뭐에 관련된 기사입니다. 주로 케이티위즈가 야구를 못한다고 하고, 진짜 경기를 왜 그렇게 하는지 답답합니다. 이럴 거면 내가 뛸게 그냥. 응?
+            {article ? article.summary : "요약 내용을 불러오는 중입니다..."}
           </SummaryText>
-       </SummaryBox>  
+        </SummaryBox>
       )}
 
-        
+      <ButtonContainer>
+        <AgoraButton variant="secondary">아고라 생성하기</AgoraButton>
+        <AgoraButton variant="primary">아고라 참여하기</AgoraButton>
+      </ButtonContainer>
+
     </>
-      
+
   );
 };
 
@@ -173,9 +274,67 @@ const SummaryText = styled.p`
   font-weight: 300;
   line-height: normal;
   letter-spacing: 0.2px;
-
+  white-space: pre-line; /* \n → 실제 줄바꿈으로 표시됨 */
 
   margin: 0;
 
 
+`;
+
+const ButtonContainer = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 95px;
+  padding: 0 20px;
+`;
+
+const AgoraButton = styled.button`
+
+  width: 100%;
+  height: 42px;
+
+  border-radius: 40px;
+  border: none;
+
+  text-align: center;
+  font-family: Pretendard;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: normal;
+  letter-spacing: 0.28px;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:active {
+    background-color: #cfcfcf;
+  }
+    ${({ variant, theme }) => {
+    switch (variant) {
+      case "primary":
+        return `
+                background: ${theme.mainLight};
+                color: #fff;
+                border: 0.5px solid ${theme.mainLight};
+                `;
+      case "secondary":
+        return `
+                background: #FFF;
+                color: ${theme.mainLight};
+                box-shadow: 0px 1px 12px 0px rgba(0, 0, 0, 0.16);
+                `;
+    }
+  }}
+
+    /* disabled 상태 스타일 */
+    &:disabled {
+        background: #ccc;
+        color: #777;
+        cursor: not-allowed;
+        border: none;
+        opacity: 0.7;
+    }
 `;
