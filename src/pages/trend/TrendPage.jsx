@@ -59,6 +59,7 @@ const TrendPage = () => {
 
   const getTrendData = useCallback(async (pageNum = 1, reset = false) => {
     try {
+      console.log("getTrendData 시작 - page:", pageNum, "reset:", reset);
       setLoading(true);
       const categoryParam = categoryMapping[selectedCategory];
       const params = {
@@ -67,11 +68,13 @@ const TrendPage = () => {
         ...(categoryParam && { category: categoryParam })
       };
 
+      console.log("API 요청 파라미터:", params);
       const res = await api.get("/api/articles", { params });
+      console.log("API 응답:", res.data);
+
       if (res.data.isSuccess) {
-        console.log(params);
-        console.log(res.data.response);
         const newArticles = res.data.response.articleList;
+        console.log("새로운 기사들:", newArticles);
         if (reset) {
           setArticles(newArticles);
         } else {
@@ -85,6 +88,22 @@ const TrendPage = () => {
       setLoading(false);
     }
   }, [selectedCategory]);
+
+  const getTrendStats = async () => {
+    try {
+      console.log("getTrendStats 시작");
+      const res = await api.get("/api/stats/trend");
+      console.log("getTrendStats 성공:", res.data);
+    } catch (err) {
+      console.error("getTrendStats 실패:", err);
+    }
+  }
+
+
+  useEffect(() => {
+    getTrendData(1, true);
+    getTrendStats();
+  }, []);
 
   // 무한 스크롤을 위한 마지막 요소 참조
   const lastArticleElementRef = useCallback(node => {
