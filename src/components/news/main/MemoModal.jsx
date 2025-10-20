@@ -1,10 +1,34 @@
 import styled from "styled-components";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import api from "../../../api/api"
 
-const MemoModal = ({ onClose }) => {
+const MemoModal = ({ onClose, articleId }) => {
   const [content, setContent] = useState(
     "작성작성작성하기...\n클릭하면 편집할 수 있게끔하면 좋겠어요\n클릭하면 편집할 수 있게끔하면 좋겠어요\n클릭하면 편집할 수 있게끔하면 좋겠어요"
   );
+  const [isSaving, setIsSaving] = useState(false);
+  
+  useEffect(() => {
+    if (!content){
+      return;
+    }
+    
+    const timer = setTimeout(async () => {
+      try{
+        setIsSaving(true);
+        await api.put(`/api/articles/${articleId}/memo`, { memo: content });
+        console.log("자동 저장 성공");
+    } catch(err){
+      console.error("자동 저장 실패:", err);
+    } finally{
+      setIsSaving(false);
+    }
+  }, 1000);
+
+  return () => clearTimeout(timer);
+}, [content, articleId]);
+
 
   return (
     <ModalWrapper>
@@ -15,7 +39,9 @@ const MemoModal = ({ onClose }) => {
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
+        placeholder = "메모를 입력하세요..."
       />
+      {setIsSaving && <SavingText>자동 저장 중...</SavingText>}
     </ModalWrapper>
   );
 };
@@ -108,4 +134,11 @@ const Textarea = styled.textarea`
     border: none;
     resize: none;
     outline: none;
+`;
+
+const SavingText = styled.span`
+  align-self: flex-end;
+  font-size: 8px;
+  color: #999;
+  margin-top: 4px;
 `;

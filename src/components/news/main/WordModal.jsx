@@ -1,32 +1,87 @@
 import styled from "styled-components";
 import { useState, useRef, useEffect } from "react";
+import axios from "axios";
 
-const WordModal = ({ onClose }) => {
-  const [content] = useState({
-    meaning: "[동사] 금지하던 것을 풀다.",
-    example: "예문) 정부에서 금서로 묶여 있던 작품들을 해금했다."
-});
+const WordModal = ({ onClose, articleId = 1 }) => {
+  const [selectedWord, setSelectedWord] = useState(" ");
+  const [meaning, setMeaning] = useState(" ");
+  const [exampled, setExample] = useState(" ");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(" ");
 
 const modalRef = useRef(null);
 
+
 useEffect(() => {
     const handleClickOutside = (e) => {
-      if (modalRef.current && !modalRef.current.contains(e.target)) {
-        onClose();
-      }
-    };
+      if (modalRef.current && !modalRef.current.contains(e.target)) onClose();
+      };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
 }, [onClose]);
 
+useEffect(() => {
+  const sel = window.getSelection();
+  let text = sel?.toString().trim() || "";
+
+  if (!text){
+    return;
+  }
+  text = text.replace(/\s+/g, " ").trim();
+  
+  if (text.length > 30) text = text.split(" ")[0];
+  setSelectedWord(text);
+  }, []);
+
+  useEffect(() => {
+    const fetchMeaning = async () => {
+      if (!selectedWord){
+        return;
+      }
+      setLoading(true);
+      setError('');
+      try{
+        const res = await api.get(`/api/articles/${articleId}/word/search`, {
+          params: {
+            query: selectedWord,
+        },  
+});
+
+        const data = res.data?.response;
+        if (!data){
+          setMeaning("");
+          setExample("");
+          setError("뜻을 찾지 못했어요.");
+          return;
+        }
+
+        setMeaning(data.description || "");
+        setExample(data.example || "");
+      } catch(e){
+        setError("네트워크 오류로 조회 실패.");
+      } finally{
+        setLoading(false);
+      }
+    };
+  fetchMeaning();
+  }, [selectedWord, articleId]);
+
+
+
 return (
     <ModalWrapper ref={modalRef}>
       <Header>
-        <Title> 해금하다 </Title>
+        <Title> {selectedWord || "용어"} </Title>
       </Header>
       <ContentBox>
-        <Meaning> {content.meaning} </Meaning>
-        <Example> {content.example} </Example>
+        {loading && <Meaning> 불러오는 중... </Meaning>}
+          {!loading && error && <Meaning>{error}</Meaning>}
+          {!loading && !error && (
+            <>
+              <Meaning>{meaning || "뜻 정보가 없습니다."}</Meaning>
+              {example && <Example>{example}</Example>}
+            </>
+          )}
       </ContentBox>
     </ModalWrapper>
   );
@@ -100,3 +155,5 @@ const Example = styled.p`
     letter-spacing: 0.2px;
     margin: 0;
 `;
+
+
