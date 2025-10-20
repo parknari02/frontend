@@ -1,8 +1,27 @@
 import styled from "styled-components"
 import Header from "../../components/common/Header";
 import checkIcon from '../../assets/icons/checkGray.svg';
+import api from "../../api/api";
 
 const AgoraCreatePage = () => {
+  const handleTestCreate = async () => {
+    const payload = {
+      title: "아고라 테스트",
+      description: "아고라 테스트 테스트",
+      articleId: 892,
+      maxParticipants: 4,
+      timeLimit: 20,
+    };
+
+    try {
+      const response = await api.post("/api/agoras", payload);
+      console.log("아고라 생성 테스트 응답:", response?.data);
+      alert("테스트 요청이 전송되었습니다.");
+    } catch (error) {
+      console.error("아고라 생성 테스트 실패:", error);
+      alert("테스트 요청에 실패했습니다. 콘솔을 확인해 주세요.");
+    }
+  };
   return (
     <PageContainer>
       <Header content='아고라 생성하기' />
@@ -59,7 +78,7 @@ const AgoraCreatePage = () => {
           </CheckBoxWrapper>
         </div>
         <div style={{ display: "flex", justifyContent: "center" }}>
-          <SubmitButton>아고라 생성하기</SubmitButton>
+          <SubmitButton onClick={handleTestCreate}>아고라 생성하기</SubmitButton>
         </div>
       </FormContainer>
     </PageContainer>
