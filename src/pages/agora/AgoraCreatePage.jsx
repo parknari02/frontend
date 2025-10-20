@@ -1,25 +1,95 @@
 import styled from "styled-components"
 import Header from "../../components/common/Header";
 import checkIcon from '../../assets/icons/checkGray.svg';
+import { useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import api from "../../api/api";
+import checkActiveIcon from '../../assets/icons/check_active.svg';
 
 const AgoraCreatePage = () => {
-  const handleTestCreate = async () => {
-    const payload = {
-      title: "아고라 테스트",
-      description: "아고라 테스트 테스트",
-      articleId: 892,
-      maxParticipants: 4,
-      timeLimit: 20,
-    };
+  const { newsId, newsTitle } = useLocation().state;
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    debateType: 'PROS_CONS',
+    creatorSide: 'PROS',
+    proMaxCount: 5,
+    conMaxCount: 5,
+    maxParticipants: 20,
+    timeLimit: 20
+  });
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleDebateTypeChange = (type) => {
+    setFormData(prev => ({
+      ...prev,
+      debateType: type
+    }));
+  };
+
+  const handleCreatorSideChange = (side) => {
+    setFormData(prev => ({
+      ...prev,
+      creatorSide: side
+    }));
+  };
+
+  const validateForm = () => {
+    if (!formData.title.trim()) {
+      alert('주제를 입력해주세요.');
+      return false;
+    }
+    if (formData.debateType === 'PROS_CONS') {
+      if (formData.proMaxCount < 1 || formData.conMaxCount < 1) {
+        alert('찬성/반대 측 인원을 1명 이상으로 설정해주세요.');
+        return false;
+      }
+    } else {
+      if (formData.maxParticipants < 1) {
+        alert('참여 인원을 1명 이상으로 설정해주세요.');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleCreateAgora = async () => {
+    if (!validateForm()) return;
 
     try {
-      const response = await api.post("/api/agoras", payload);
-      console.log("아고라 생성 테스트 응답:", response?.data);
-      alert("테스트 요청이 전송되었습니다.");
+      const requestData = {
+        title: formData.title,
+        description: formData.description,
+        articleId: newsId,
+        debateType: formData.debateType,
+        timeLimit: 20
+      };
+
+      if (formData.debateType === 'PROS_CONS') {
+        requestData.creatorSide = formData.creatorSide;
+        requestData.proMaxCount = formData.proMaxCount;
+        requestData.conMaxCount = formData.conMaxCount;
+      } else {
+        requestData.maxParticipants = formData.maxParticipants;
+      }
+
+      console.log('요청 데이터:', requestData);
+      const response = await api.post('/api/agoras', requestData);
+      console.log('아고라 생성 성공:', response.data);
+
+      // 성공 시 아고라 페이지로 이동
+      navigate('/agora');
     } catch (error) {
-      console.error("아고라 생성 테스트 실패:", error);
-      alert("테스트 요청에 실패했습니다. 콘솔을 확인해 주세요.");
+      console.error('아고라 생성 실패:', error);
+      alert('아고라 생성에 실패했습니다.');
     }
   };
   return (
@@ -30,55 +100,96 @@ const AgoraCreatePage = () => {
         <Label>
           주제<span>*</span>
         </Label>
-        <Input placeholder="토론 주제를 입력하세요." />
+        <Input
+          placeholder="토론 주제를 입력하세요."
+          value={formData.title}
+          onChange={(e) => handleInputChange('title', e.target.value)}
+        />
 
         <Label>설명</Label>
-        <Input long placeholder="토론에 대한 간략한 설명을 입력하세요." />
+        <Input
+          long
+          placeholder="토론에 대한 간략한 설명을 입력하세요."
+          value={formData.description}
+          onChange={(e) => handleInputChange('description', e.target.value)}
+        />
 
         <Label>
           관련 기사<span>*</span>
         </Label>
-        <Input placeholder="경제 관련 기사 스크랩한 거" />
+        <Input placeholder="경제 관련 기사 스크랩한 거" value={newsTitle} readOnly />
 
         <Label>
           토론 형식<span>*</span>
         </Label>
         <RadioGroup>
-          <RadioButton variant="mainLight">찬성/반대</RadioButton>
-          <RadioButton variant="white">자유</RadioButton>
+          <RadioButton
+            variant={formData.debateType === 'PROS_CONS' ? 'mainLight' : 'white'}
+            onClick={() => handleDebateTypeChange('PROS_CONS')}
+          >
+            찬성/반대
+          </RadioButton>
+          <RadioButton
+            variant={formData.debateType === 'FREE_DEBATE' ? 'mainLight' : 'white'}
+            onClick={() => handleDebateTypeChange('FREE_DEBATE')}
+          >
+            자유
+          </RadioButton>
         </RadioGroup>
 
 
-        <LabelWrapper>
-          <Label>
-            토론 인원<span>*</span>
-          </Label>
-          <SmallText>개설자가 참여할 측에 체크를 눌러주세요.</SmallText>
-        </LabelWrapper>
+        {formData.debateType === 'PROS_CONS' ? (
+          <>
+            <LabelWrapper>
+              <Label>
+                토론 인원<span>*</span>
+              </Label>
+              <SmallText>개설자가 참여할 측을 선택해주세요.</SmallText>
+            </LabelWrapper>
 
-        <div style={{ display: "flex", gap: "25px" }}>
-          <CheckBoxWrapper>
-            <Label small>찬성</Label>
-            <CheckMark>
-              <span>0명</span>
-              <IconWrapper>
-                <img src={checkIcon} alt="user profile icon" />
-              </IconWrapper>
-            </CheckMark>
-          </CheckBoxWrapper>
+            <div style={{ display: "flex", gap: "25px" }}>
+              <CheckBoxWrapper>
+                <Label small>찬성</Label>
+                <CheckMark
+                  onClick={() => handleCreatorSideChange('PROS')}
+                  $isSelected={formData.creatorSide === 'PROS'}
+                >
+                  <span>{formData.proMaxCount}명</span>
+                  <IconWrapper>
+                    <img src={formData.creatorSide === 'PROS' ? checkActiveIcon : checkIcon} alt="user profile icon" />
+                  </IconWrapper>
+                </CheckMark>
+              </CheckBoxWrapper>
 
-          <CheckBoxWrapper>
-            <Label small>반대</Label>
-            <CheckMark>
-              <span>0명</span>
-              <IconWrapper>
-                <img src={checkIcon} alt="user profile icon" />
-              </IconWrapper>
-            </CheckMark>
-          </CheckBoxWrapper>
-        </div>
+              <CheckBoxWrapper>
+                <Label small>반대</Label>
+                <CheckMark
+                  onClick={() => handleCreatorSideChange('CONS')}
+                  $isSelected={formData.creatorSide === 'CONS'}
+                >
+                  <span>{formData.conMaxCount}명</span>
+                  <IconWrapper>
+                    <img src={formData.creatorSide === 'CONS' ? checkActiveIcon : checkIcon} alt="user profile icon" />
+                  </IconWrapper>
+                </CheckMark>
+              </CheckBoxWrapper>
+            </div>
+          </>
+        ) : (
+          <>
+            <Label>
+              토론 인원<span>*</span>
+            </Label>
+            <Input
+              type="number"
+              placeholder="전체 참여 인원을 입력하세요."
+              value={formData.maxParticipants}
+              onChange={(e) => handleInputChange('maxParticipants', parseInt(e.target.value) || 0)}
+            />
+          </>
+        )}
         <div style={{ display: "flex", justifyContent: "center" }}>
-          <SubmitButton onClick={handleTestCreate}>아고라 생성하기</SubmitButton>
+          <SubmitButton onClick={handleCreateAgora}>아고라 생성하기</SubmitButton>
         </div>
       </FormContainer>
     </PageContainer>
@@ -248,12 +359,14 @@ const CheckMark = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 8px;
-  background: #F4F4F4;
+  background: ${({ $isSelected }) => $isSelected ? '#eae6ff' : '#F4F4F4'};
   border-radius: 4px;
   font-size: 12px;
   font-weight: 300;
-  color: #A2A2A2;
+  color: ${({ $isSelected }) => $isSelected ? '#5a3ef0' : '#A2A2A2'};
+  border: ${({ $isSelected }) => $isSelected ? '1px solid #5a3ef0' : '1px solid transparent'};
   cursor: pointer;
+  transition: all 0.2s ease;
 `;
 
 const IconWrapper = styled.div`

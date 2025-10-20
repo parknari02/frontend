@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import AgoraCard from './AgoraCard';
+import api from '../../api/api';
+import { useState, useEffect } from 'react';
 //import { useNavigate } from 'react-router-dom'; // React Router 사용 시
 
 const agoraData = [
@@ -38,6 +40,20 @@ const agoraData = [
 ]
 
 const AgoraList = ({ onSelect, onCreate }) => {
+    const [agoraList, setAgoraList] = useState([]);
+    const getAgoraList = async () => {
+        try {
+            const res = await api.get('/api/agoras');
+            console.log(res.data);
+            setAgoraList(res.data.response.agoraList);
+        } catch (error) {
+            console.error('아고라 목록 조회 실패:', error);
+        }
+    }
+
+    useEffect(() => {
+        getAgoraList();
+    }, []);
     //const navigate = useNavigate();
 
     return (
