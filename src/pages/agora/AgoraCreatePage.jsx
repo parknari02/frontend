@@ -18,7 +18,6 @@ const AgoraCreatePage = () => {
     proMaxCount: 5,
     conMaxCount: 5,
     maxParticipants: 20,
-    timeLimit: 20
   });
 
   const handleInputChange = (field, value) => {
@@ -70,7 +69,6 @@ const AgoraCreatePage = () => {
         description: formData.description,
         articleId: newsId,
         debateType: formData.debateType,
-        timeLimit: 20
       };
 
       if (formData.debateType === 'PROS_CONS') {
