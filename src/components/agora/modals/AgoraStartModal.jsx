@@ -6,10 +6,12 @@ import clockIcon from '../../../assets/icons/clock.svg';
 import ModalButton from '../../common/ModalButton';
 import api from '../../../api/api';
 import { useState, useEffect } from 'react';
+import { useAgoraStatus } from '../../../contexts/AgoraStatusContext';
 
 const AgoraStartModal = ({ isOpen, onClose, agora }) => {
     const [agoraDetail, setAgoraDetail] = useState(null);
     const [loading, setLoading] = useState(false);
+    const { connectWebSocket } = useAgoraStatus();
 
     const getAgoraDetail = async (agoraId) => {
         if (!agoraId) return;
@@ -47,6 +49,116 @@ const AgoraStartModal = ({ isOpen, onClose, agora }) => {
     // 상태 변환 함수
     const getStatusText = (status) => {
         return status === 'WAITING' ? '대기중' : '진행중';
+    };
+
+    // 토론방 참여 함수 (찬성/반대)
+    const handleJoinAgora = async (side) => {
+        if (!agoraDetail) return;
+
+        try {
+            // API 요청으로 토론방 참여
+            const response = await api.post(`/api/agoras/${agoraDetail.id}/join`, {
+                agoraId: agoraDetail.id,
+                side: side
+            });
+
+            console.log('토론방 참여 성공:', response.data);
+
+            const userId = localStorage.getItem('userId');
+
+            // WebSocket 연결 (참가자로 연결)
+            connectWebSocket(agoraDetail.id, userId, false);
+
+            // 참여 완료 토스트 알림 표시
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #4DB985;
+                color: white;
+                padding: 16px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-weight: 500;
+                animation: slideDown 0.3s ease-out;
+            `;
+            notification.textContent = '토론방 참여 완료! 방장이 토론을 시작하면 자동으로 이동합니다.';
+            document.body.appendChild(notification);
+
+            // 3초 후 알림 제거
+            setTimeout(() => {
+                notification.style.animation = 'slideUp 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+
+            // 모달만 닫고 페이지 이동은 하지 않음 (대기실에서 기다림)
+            onClose();
+        } catch (error) {
+            console.error('토론방 참여 실패:', error);
+            alert('토론방 참여에 실패했습니다.');
+        }
+    };
+
+    // 관전하기 함수
+    const handleWatchAgora = async () => {
+        if (!agoraDetail) return;
+
+        try {
+            // API 요청으로 관전하기
+            const response = await api.post(`/api/agoras/${agoraDetail.id}/join`, {
+                agoraId: agoraDetail.id,
+                side: "OBSERVER"
+            });
+
+            console.log('관전하기 성공:', response.data);
+
+            const userId = localStorage.getItem('userId');
+
+            // WebSocket 연결 (관전자로 연결)
+            connectWebSocket(agoraDetail.id, userId, false);
+
+            // 관전 완료 토스트 알림 표시
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #4DB985;
+                color: white;
+                padding: 16px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-weight: 500;
+                animation: slideDown 0.3s ease-out;
+            `;
+            notification.textContent = '토론방 관전 완료! 방장이 토론을 시작하면 자동으로 이동합니다.';
+            document.body.appendChild(notification);
+
+            // 3초 후 알림 제거
+            setTimeout(() => {
+                notification.style.animation = 'slideUp 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+
+            // 모달만 닫고 페이지 이동은 하지 않음 (대기실에서 기다림)
+            onClose();
+        } catch (error) {
+            console.error('관전하기 실패:', error);
+            alert('관전하기에 실패했습니다.');
+        }
     };
 
     if (loading) {
@@ -117,21 +229,45 @@ const AgoraStartModal = ({ isOpen, onClose, agora }) => {
                     </Left>
 
                     <Right>
-                        <VoteRow>
-                            <span><b>찬성</b> {agoraDetail.prosCount} / {agoraDetail.proMaxCount}</span>
-                            <VoteButton active={agoraDetail.userSide === 'PROS'}>참여하기</VoteButton>
-                        </VoteRow>
-                        <VoteRow>
-                            <span><b>반대</b> {agoraDetail.consCount} / {agoraDetail.conMaxCount}</span>
-                            <VoteButton active={agoraDetail.userSide === 'CONS'}>참여하기</VoteButton>
-                        </VoteRow>
+                        {agoraDetail.debateType === 'PROS_CONS' ? (
+                            <>
+                                <VoteRow>
+                                    <span><b>찬성</b> {agoraDetail.prosCount} / {agoraDetail.proMaxCount}</span>
+                                    <VoteButton
+                                        active={agoraDetail.userSide === 'PROS'}
+                                        onClick={() => handleJoinAgora('PROS')}
+                                    >
+                                        참여하기
+                                    </VoteButton>
+                                </VoteRow>
+                                <VoteRow>
+                                    <span><b>반대</b> {agoraDetail.consCount} / {agoraDetail.conMaxCount}</span>
+                                    <VoteButton
+                                        active={agoraDetail.userSide === 'CONS'}
+                                        onClick={() => handleJoinAgora('CONS')}
+                                    >
+                                        참여하기
+                                    </VoteButton>
+                                </VoteRow>
+                            </>
+                        ) : (
+                            <VoteRow>
+                                <span><b>자유토론</b> {agoraDetail.participantCount} / {agoraDetail.maxParticipants}</span>
+                                <VoteButton
+                                    active={agoraDetail.userSide === 'PARTICIPANT'}
+                                    onClick={() => handleJoinAgora('PARTICIPANT')}
+                                >
+                                    참여하기
+                                </VoteButton>
+                            </VoteRow>
+                        )}
                     </Right>
                 </AgoraInfoCard>
 
                 <Notice>* 참여, 관전 대기 중 방장이 시작을 누르면 아고라가 시작됩니다.</Notice>
 
                 <ButtonContainer>
-                    <ModalButton variant="primary">관전하기</ModalButton>
+                    <ModalButton variant="primary" onClick={handleWatchAgora}>관전하기</ModalButton>
                     <ModalButton variant="secondary" onClick={onClose}>닫기</ModalButton>
                 </ButtonContainer>
 

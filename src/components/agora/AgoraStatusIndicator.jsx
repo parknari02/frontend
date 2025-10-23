@@ -5,18 +5,19 @@ import api from '../../api/api';
 
 const AgoraStatusIndicator = () => {
     const [agoraStatus, setAgoraStatus] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [showIndicator, setShowIndicator] = useState(false); // 기본값을 false로 변경
     const { openStatusSlide } = useAgoraStatus();
 
     const getAgoraStatus = async () => {
-        setLoading(true);
         try {
-            const res = await api.get('/api/agoras/my-status');
-            setAgoraStatus(res.data.response);
+            const res = await api.get('/api/agoras/my-waiting-room');
+            setAgoraStatus(res.data);
+            setShowIndicator(true);
         } catch (error) {
             console.error('아고라 상태 조회 실패:', error);
-        } finally {
-            setLoading(false);
+            if (error.response?.status === 403) {
+                setShowIndicator(false);
+            }
         }
     };
 
@@ -28,11 +29,15 @@ const AgoraStatusIndicator = () => {
     }, []);
 
     // 상태에 따른 텍스트 변환
-    const getStatusText = (status) => {
-        switch (status) {
+    const getStatusText = (currentPhase) => {
+        switch (currentPhase) {
             case 'WAITING':
                 return '아고라 대기중';
-            case 'PROGRESS':
+            case 'OPENING_STATEMENT_PRO':
+            case 'OPENING_STATEMENT_CON':
+            case 'DEBATE':
+            case 'CLOSING_STATEMENT_PRO':
+            case 'CLOSING_STATEMENT_CON':
                 return '아고라 진행중';
             case 'ENDED':
                 return '아고라 종료됨';
@@ -42,11 +47,15 @@ const AgoraStatusIndicator = () => {
     };
 
     // 상태에 따른 색상
-    const getStatusColor = (status) => {
-        switch (status) {
+    const getStatusColor = (currentPhase) => {
+        switch (currentPhase) {
             case 'WAITING':
                 return '#4DB985';
-            case 'PROGRESS':
+            case 'OPENING_STATEMENT_PRO':
+            case 'OPENING_STATEMENT_CON':
+            case 'DEBATE':
+            case 'CLOSING_STATEMENT_PRO':
+            case 'CLOSING_STATEMENT_CON':
                 return '#F83001';
             case 'ENDED':
                 return '#9E9E9E';
@@ -55,14 +64,14 @@ const AgoraStatusIndicator = () => {
         }
     };
 
-    // 아고라 상태가 없어도 표시 (무조건 보이게)
-    // if (!agoraStatus || loading) return null;
+    // 403 에러 시 인디케이터 숨김
+    if (!showIndicator) return null;
 
     return (
         <StatusIndicator onClick={openStatusSlide}>
-            <StatusDot $color={agoraStatus ? getStatusColor(agoraStatus.status) : '#4DB985'} />
+            <StatusDot $color={agoraStatus ? getStatusColor(agoraStatus.currentPhase) : '#4DB985'} />
             <StatusText>
-                {agoraStatus ? getStatusText(agoraStatus.status) : '아고라 대기중'}
+                {agoraStatus ? getStatusText(agoraStatus.currentPhase) : '아고라 대기중'}
             </StatusText>
         </StatusIndicator>
     );

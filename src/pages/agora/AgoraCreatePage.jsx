@@ -5,10 +5,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../../api/api";
 import checkActiveIcon from '../../assets/icons/check_active.svg';
+import { useAgoraStatus } from "../../contexts/AgoraStatusContext";
 
 const AgoraCreatePage = () => {
   const { newsId, newsTitle } = useLocation().state;
   const navigate = useNavigate();
+  const { connectWebSocket } = useAgoraStatus();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -83,8 +85,16 @@ const AgoraCreatePage = () => {
       const response = await api.post('/api/agoras', requestData);
       console.log('아고라 생성 성공:', response.data);
 
-      // 성공 시 아고라 페이지로 이동
-      navigate('/agora');
+      if (response.data.isSuccess) {
+        const agoraId = response.data.response.id;
+        const userId = 1; // TODO: 실제 사용자 ID로 교체
+
+        // WebSocket 연결 (개설자로 연결)
+        connectWebSocket(agoraId, userId, true);
+
+        // 아고라 페이지로 이동 (참가자들이 들어올 때까지 대기)
+        navigate('/agora');
+      }
     } catch (error) {
       console.error('아고라 생성 실패:', error);
       alert('아고라 생성에 실패했습니다.');

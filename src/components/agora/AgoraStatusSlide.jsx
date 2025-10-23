@@ -3,179 +3,219 @@ import { useState, useEffect } from 'react';
 import api from '../../api/api';
 import clockIcon from '../../assets/icons/clock.svg';
 import userProfileIcon from '../../assets/icons/userProfile.svg';
+import { useAgoraStatus } from '../../contexts/AgoraStatusContext';
+import { useNavigate } from 'react-router-dom';
 
 const AgoraStatusModal = ({ isOpen, onClose }) => {
-    const [agoraStatus, setAgoraStatus] = useState(null);
-    const [loading, setLoading] = useState(false);
+  const [agoraStatus, setAgoraStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { connectWebSocket } = useAgoraStatus();
+  const navigate = useNavigate();
 
-    const getAgoraStatus = async () => {
-        setLoading(true);
-        try {
-            const res = await api.get('/api/agoras/my-status');
-            setAgoraStatus(res.data?.response ?? null);
-        } catch (error) {
-            console.error('아고라 상태 조회 실패:', error);
-        } finally {
-            setLoading(false);
-        }
+
+  const getAgoraStatus = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/api/agoras/my-waiting-room');
+      console.log(res.data);
+      setAgoraStatus(res.data.response ?? null);
+    } catch (error) {
+      console.error('아고라 상태 조회 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startAgora = async () => {
+    if (!agoraStatus?.agoraId) return;
+
+    try {
+      // 1. 토론 시작 API 호출
+      const res = await api.post(`/api/agoras/${agoraStatus.agoraId}/start`, {
+        agoraId: agoraStatus.agoraId,
+        durationMinutes: 30,
+        speechDurationMinutes: 3,
+        allowSpectators: true,
+        enableChat: true
+      });
+      console.log('토론 시작 성공:', res.data);
+
+      // 2. 방장이 WebSocket에 연결하고 토론방에 입장
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        console.log('방장이 WebSocket에 연결하고 토론방에 입장합니다.');
+        connectWebSocket(agoraStatus.agoraId, userId, true); // 방장으로 연결
+
+        // 3. 토론방 페이지로 이동
+        setTimeout(() => {
+          navigate(`/agora/chat/${agoraStatus.agoraId}`);
+          onClose(); // 모달 닫기
+        }, 1000);
+      } else {
+        console.error('userId가 없습니다.');
+      }
+
+      // 성공 시 상태 새로고침
+      getAgoraStatus();
+    } catch (error) {
+      console.error('아고라 시작 실패:', error);
+    }
+  };
+
+
+  // 열릴 때 데이터 로드
+  useEffect(() => {
+    if (isOpen) {
+      getAgoraStatus();
+    }
+  }, [isOpen]);
+
+  // ESC로 닫기 + 스크롤 락
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') onClose?.();
     };
+    document.addEventListener('keydown', onKeyDown);
 
-    // 열릴 때 데이터 로드
-    useEffect(() => {
-        if (isOpen) getAgoraStatus();
-    }, [isOpen]);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
-    // ESC로 닫기 + 스크롤 락
-    useEffect(() => {
-        if (!isOpen) return;
-
-        const onKeyDown = (e) => {
-            if (e.key === 'Escape') onClose?.();
-        };
-        document.addEventListener('keydown', onKeyDown);
-
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-
-        return () => {
-            document.removeEventListener('keydown', onKeyDown);
-            document.body.style.overflow = previousOverflow;
-        };
-    }, [isOpen, onClose]);
-
-    // 시간 포맷
-    const formatTime = (timeArray) => {
-        if (!timeArray || timeArray.length < 6) return '방장시작';
-        const [, , , hour, minute] = timeArray;
-        return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
     };
+  }, [isOpen, onClose]);
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case 'WAITING':
-                return '대기중';
-            case 'PROGRESS':
-                return '진행중';
-            case 'ENDED':
-                return '종료됨';
-            default:
-                return '알 수 없음';
-        }
-    };
 
-    const getParticipantTypeText = (type) => {
-        switch (type) {
-            case 'HOST':
-                return '방장';
-            case 'PARTICIPANT':
-                return '참여자';
-            case 'OBSERVER':
-                return '관전자';
-            default:
-                return '참여자';
-        }
-    };
+  const getStatusText = (currentPhase) => {
+    switch (currentPhase) {
+      case 'WAITING':
+        return '대기중';
+      case 'OPENING_STATEMENT_PRO':
+      case 'OPENING_STATEMENT_CON':
+      case 'DEBATE':
+      case 'CLOSING_STATEMENT_PRO':
+      case 'CLOSING_STATEMENT_CON':
+        return '진행중';
+      case 'ENDED':
+        return '종료됨';
+      default:
+        return '알 수 없음';
+    }
+  };
 
-    const getSideText = (side) => {
-        switch (side) {
-            case 'PROS':
-                return '찬성';
-            case 'CONS':
-                return '반대';
-            default:
-                return '자유';
-        }
-    };
 
-    if (!isOpen) return null;
 
-    return (
-        <>
-            <Overlay onClick={onClose} />
-            <ModalContainer role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-                <ModalHeader>
-                    <ModalTitle>내 아고라 상태</ModalTitle>
-                    <CloseButton onClick={onClose} aria-label="닫기">×</CloseButton>
-                </ModalHeader>
+  // 현재 사용자가 방장인지 확인 (API에서 제공하는 currentUserHost 사용)
+  const isCurrentUserHost = () => {
+    if (!agoraStatus) return false;
+    return agoraStatus.currentUserHost;
+  };
 
-                <ModalContent>
-                    {loading ? (
-                        <LoadingContainer>
-                            <LoadingText>로딩 중...</LoadingText>
-                        </LoadingContainer>
-                    ) : agoraStatus ? (
-                        <StatusContent>
-                            <AgoraInfoCard>
-                                <AgoraHeader>
-                                    <AgoraTitle>{agoraStatus.title}</AgoraTitle>
-                                    <StatusBadge $status={agoraStatus.status}>
-                                        {getStatusText(agoraStatus.status)}
-                                    </StatusBadge>
-                                </AgoraHeader>
+  if (!isOpen) return null;
 
-                                <AgoraDescription>{agoraStatus.description}</AgoraDescription>
+  return (
+    <>
+      <Overlay onClick={onClose} />
+      <ModalContainer role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+        <ModalHeader>
+          <ModalTitle>내 아고라 상태</ModalTitle>
+          <CloseButton onClick={onClose} aria-label="닫기">×</CloseButton>
+        </ModalHeader>
 
-                                <AgoraDetails>
-                                    <DetailRow>
-                                        <IconWrapper>
-                                            <img src={userProfileIcon} alt="user icon" />
-                                        </IconWrapper>
-                                        <DetailText>
-                                            {getParticipantTypeText(agoraStatus.participantType)} · {getSideText(agoraStatus.userSide)}
-                                        </DetailText>
-                                    </DetailRow>
+        <ModalContent>
+          {loading ? (
+            <LoadingContainer>
+              <LoadingText>로딩 중...</LoadingText>
+            </LoadingContainer>
+          ) : agoraStatus ? (
+            <StatusContent>
+              <AgoraInfoCard>
+                <AgoraHeader>
+                  <AgoraTitle>{agoraStatus.title}</AgoraTitle>
+                  <StatusBadge $status={agoraStatus.status}>
+                    {getStatusText(agoraStatus.status)}
+                  </StatusBadge>
+                </AgoraHeader>
 
-                                    <DetailRow>
-                                        <IconWrapper>
-                                            <img src={clockIcon} alt="clock icon" />
-                                        </IconWrapper>
-                                        <DetailText>시작: {formatTime(agoraStatus.startedAt)}</DetailText>
-                                    </DetailRow>
+                <AgoraDescription>
+                  {agoraStatus.description}
+                </AgoraDescription>
 
-                                    <DetailRow>
-                                        <IconWrapper>
-                                            <img src={clockIcon} alt="clock icon" />
-                                        </IconWrapper>
-                                        <DetailText>제한시간: {agoraStatus.timeLimit}분</DetailText>
-                                    </DetailRow>
-                                </AgoraDetails>
+                <AgoraDetails>
+                  <DetailRow>
+                    <IconWrapper>
+                      <img src={userProfileIcon} alt="user icon" />
+                    </IconWrapper>
+                    <DetailText>
+                      총 참여자: {agoraStatus.totalParticipants}명 (찬성: {agoraStatus.proCount}명, 반대: {agoraStatus.conCount}명)
+                    </DetailText>
+                  </DetailRow>
 
-                                <ParticipantInfo>
-                                    <ParticipantRow>
-                                        <ParticipantLabel>찬성</ParticipantLabel>
-                                        <ParticipantCount>
-                                            {agoraStatus.prosCount} / {agoraStatus.proMaxCount}
-                                        </ParticipantCount>
-                                    </ParticipantRow>
-                                    <ParticipantRow>
-                                        <ParticipantLabel>반대</ParticipantLabel>
-                                        <ParticipantCount>
-                                            {agoraStatus.consCount} / {agoraStatus.conMaxCount}
-                                        </ParticipantCount>
-                                    </ParticipantRow>
-                                </ParticipantInfo>
-                            </AgoraInfoCard>
+                  <DetailRow>
+                    <IconWrapper>
+                      <img src={userProfileIcon} alt="host icon" />
+                    </IconWrapper>
+                    <DetailText>
+                      방장: {agoraStatus.hostUsername}
+                    </DetailText>
+                  </DetailRow>
 
-                            <ActionButtons>
-                                {agoraStatus.status === 'WAITING' && (
-                                    <ActionButton $variant="primary">아고라 입장하기</ActionButton>
-                                )}
-                                {agoraStatus.status === 'PROGRESS' && (
-                                    <ActionButton $variant="primary">토론 참여하기</ActionButton>
-                                )}
-                                <ActionButton $variant="secondary">상세 정보 보기</ActionButton>
-                            </ActionButtons>
-                        </StatusContent>
-                    ) : (
-                        <EmptyContainer>
-                            <EmptyText>참여 중인 아고라가 없습니다.</EmptyText>
-                            <EmptySubText>새로운 아고라에 참여해보세요!</EmptySubText>
-                        </EmptyContainer>
-                    )}
-                </ModalContent>
-            </ModalContainer>
-        </>
-    );
+                  {!agoraStatus.canStartDebate && (
+                    <DetailRow>
+                      <IconWrapper>
+                        <img src={clockIcon} alt="warning icon" />
+                      </IconWrapper>
+                      <DetailText>
+                        {agoraStatus.cannotStartReason}
+                      </DetailText>
+                    </DetailRow>
+                  )}
+                </AgoraDetails>
+
+                <ParticipantInfo>
+                  <ParticipantLabel>참여자 목록</ParticipantLabel>
+                  {agoraStatus.participants.map((participant) => (
+                    <ParticipantRow key={participant.participantId}>
+                      <ParticipantCount>
+                        {participant.username}
+                        {participant.host && ' (방장)'}
+                        {participant.side && ` (${participant.side})`}
+                        {participant.ready && ' (준비완료)'}
+                      </ParticipantCount>
+                    </ParticipantRow>
+                  ))}
+                </ParticipantInfo>
+              </AgoraInfoCard>
+
+              <ActionButtons>
+                {agoraStatus.status === 'WAITING' && (
+                  <ActionButton
+                    $variant="primary"
+                    onClick={startAgora}
+                    disabled={!agoraStatus.canStartDebate}
+                  >
+                    {isCurrentUserHost() ? '아고라 시작하기' : '아고라 입장하기'}
+                  </ActionButton>
+                )}
+                {agoraStatus.status !== 'WAITING' && agoraStatus.status !== 'ENDED' && (
+                  <ActionButton $variant="primary">토론 참여하기</ActionButton>
+                )}
+                <ActionButton $variant="secondary">상세 정보 보기</ActionButton>
+              </ActionButtons>
+            </StatusContent>
+          ) : (
+            <EmptyContainer>
+              <EmptyText>참여 중인 아고라가 없습니다.</EmptyText>
+              <EmptySubText>새로운 아고라에 참여해보세요!</EmptySubText>
+            </EmptyContainer>
+          )}
+        </ModalContent>
+      </ModalContainer>
+    </>
+  );
 };
 
 export default AgoraStatusModal;
@@ -281,13 +321,13 @@ const AgoraTitle = styled.h3`
 const StatusBadge = styled.div`
   padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;
   background-color: ${({ $status }) => {
-        switch ($status) {
-            case 'WAITING': return '#4DB985';
-            case 'PROGRESS': return '#F83001';
-            case 'ENDED': return '#9E9E9E';
-            default: return '#9E9E9E';
-        }
-    }};
+    switch ($status) {
+      case 'WAITING': return '#4DB985';
+      case 'PROGRESS': return '#F83001';
+      case 'ENDED': return '#9E9E9E';
+      default: return '#9E9E9E';
+    }
+  }};
   color: #fff;
 `;
 
@@ -313,7 +353,7 @@ const DetailText = styled.span`
 `;
 
 const ParticipantInfo = styled.div`
-  display: flex; gap: 16px;
+  display: flex; flex-direction: column; gap: 8px;
 `;
 
 const ParticipantRow = styled.div`
@@ -322,10 +362,11 @@ const ParticipantRow = styled.div`
 
 const ParticipantLabel = styled.span`
   font-size: 12px; color: ${({ theme }) => theme.lightGray};
+  font-weight: 600;
 `;
 
 const ParticipantCount = styled.span`
-  font-size: 14px; font-weight: 600; color: ${({ theme }) => theme.gray};
+  font-size: 14px; font-weight: 500; color: ${({ theme }) => theme.gray};
 `;
 
 const ActionButtons = styled.div`
@@ -334,10 +375,16 @@ const ActionButtons = styled.div`
 
 const ActionButton = styled.button`
   width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 600; border: none; cursor: pointer;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
   ${({ $variant, theme }) => $variant === 'primary'
-        ? `background: linear-gradient(180deg, rgba(6, 6, 250, 0.6) -5.91%, rgba(132, 132, 255, 0.24) 121.16%); color:#fff;`
-        : `background:#fff; color:${theme.gray}; border:1px solid ${theme.lightGray};`
-    }
+    ? `background: linear-gradient(180deg, rgba(6, 6, 250, 0.6) -5.91%, rgba(132, 132, 255, 0.24) 121.16%); color:#fff;`
+    : `background:#fff; color:${theme.gray}; border:1px solid ${theme.lightGray};`
+  }
 `;
 
 const EmptyContainer = styled.div`
