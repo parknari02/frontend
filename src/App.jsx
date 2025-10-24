@@ -2,14 +2,15 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Provider } from 'react-redux';
 import { store } from './store';
 import { AgoraStatusProvider } from './contexts/AgoraStatusContext';
-import NewsPage from './pages/news/NewsPage';
+import NewsPage from './pages/News/NewsPage';
 import AgoraPage from './pages/agora/AgoraPage';
 import TrendPage from './pages/trend/TrendPage';
-import MyPage from './pages/my/MyPage';
+import MyPage from './pages/My/MyPage';
 import NewsListPage from './pages/news/NewsListPage';
 import NewsDetailPage from './pages/news/NewsDetailPage';
 import AgoraCreatePage from './pages/agora/AgoraCreatePage';
 import AgoraChatPage from './pages/agora/AgoraChatPage';
+import AgoraDetailPage from './pages/agora/AgoraDetailPage';
 import SignInPage from './pages/user/SignInPage';
 import SignUpPage from './pages/user/SignUpPage';
 import AgoraParticipatePage from './pages/agora/AgoraParticipatePage'
@@ -91,6 +92,14 @@ function App() {
               element={
                 <RequireAuth>
                   <AgoraChatPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/agora/detail"
+              element={
+                <RequireAuth>
+                  <AgoraDetailPage />
                 </RequireAuth>
               }
             />

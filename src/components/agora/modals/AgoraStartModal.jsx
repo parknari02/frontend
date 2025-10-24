@@ -7,8 +7,10 @@ import ModalButton from '../../common/ModalButton';
 import api from '../../../api/api';
 import { useState, useEffect } from 'react';
 import { useAgoraStatus } from '../../../contexts/AgoraStatusContext';
+import { useNavigate } from 'react-router-dom';
 
 const AgoraStartModal = ({ isOpen, onClose, agora }) => {
+    const navigate = useNavigate();
     const [agoraDetail, setAgoraDetail] = useState(null);
     const [loading, setLoading] = useState(false);
     const { connectWebSocket } = useAgoraStatus();
@@ -73,24 +75,26 @@ const AgoraStartModal = ({ isOpen, onClose, agora }) => {
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: #4DB985;
+                bottom: 20px;
+                left: 16px;
+                right: 16px;
+                background: #8484FF;
                 color: white;
                 padding: 16px 24px;
                 border-radius: 8px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                 z-index: 10000;
                 font-weight: 500;
-                animation: slideDown 0.3s ease-out;
+                animation: slideUp 0.3s ease-out;
+                text-align: center;
+                font-size: 12px;
             `;
             notification.textContent = '토론방 참여 완료! 방장이 토론을 시작하면 자동으로 이동합니다.';
             document.body.appendChild(notification);
 
             // 3초 후 알림 제거
             setTimeout(() => {
-                notification.style.animation = 'slideUp 0.3s ease-in';
+                notification.style.animation = 'slideDown 0.3s ease-in';
                 setTimeout(() => {
                     if (notification.parentNode) {
                         notification.parentNode.removeChild(notification);
@@ -128,9 +132,9 @@ const AgoraStartModal = ({ isOpen, onClose, agora }) => {
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
+                bottom: 20px;
+                left: 16px;
+                right: 16px;
                 background: #4DB985;
                 color: white;
                 padding: 16px 24px;
@@ -138,14 +142,15 @@ const AgoraStartModal = ({ isOpen, onClose, agora }) => {
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                 z-index: 10000;
                 font-weight: 500;
-                animation: slideDown 0.3s ease-out;
+                animation: slideUp 0.3s ease-out;
+                text-align: center;
             `;
             notification.textContent = '토론방 관전 완료! 방장이 토론을 시작하면 자동으로 이동합니다.';
             document.body.appendChild(notification);
 
             // 3초 후 알림 제거
             setTimeout(() => {
-                notification.style.animation = 'slideUp 0.3s ease-in';
+                notification.style.animation = 'slideDown 0.3s ease-in';
                 setTimeout(() => {
                     if (notification.parentNode) {
                         notification.parentNode.removeChild(notification);
@@ -199,7 +204,7 @@ const AgoraStartModal = ({ isOpen, onClose, agora }) => {
 
                 <ArticleSection>
                     <ArticleButton>
-                        <ArticleText>
+                        <ArticleText onClick={() => navigate(`/news/${agoraDetail.articleId}`)}>
                             기사 원문 | <b>{agoraDetail.articleTitle}</b>
                         </ArticleText>
                         <ArrowIcon>→</ArrowIcon >

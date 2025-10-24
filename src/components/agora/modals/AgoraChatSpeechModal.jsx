@@ -109,7 +109,6 @@ export default AgoraChatSpeechModal;
 const InputBox = styled.textarea`
     font-size: 12px;
     font-weight: 300;
-    color: ${({ theme }) => theme.gray};
     background: #F4F4F4;
     padding: 12px;
     border-radius: 5px;

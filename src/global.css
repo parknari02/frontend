@@ -19,25 +19,25 @@ body {
   background-color: #f5f5f5;
 }
 
-/* 토론 시작 알림 애니메이션 */
-@keyframes slideDown {
+/* 토스트 알림 애니메이션 */
+@keyframes slideUp {
   from {
-    transform: translateX(-50%) translateY(-100%);
+    transform: translateY(100%);
     opacity: 0;
   }
   to {
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
     opacity: 1;
   }
 }
 
-@keyframes slideUp {
+@keyframes slideDown {
   from {
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
     opacity: 1;
   }
   to {
-    transform: translateX(-50%) translateY(-100%);
+    transform: translateY(100%);
     opacity: 0;
   }
 }

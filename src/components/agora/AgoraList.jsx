@@ -15,30 +15,42 @@ const AgoraList = ({ onSelect, onCreate }) => {
 
     // API 응답 데이터를 기존 형식으로 변환하는 함수
     const transformAgoraData = useCallback((apiData) => {
-        return apiData.map(item => ({
-            id: item.id,
-            title: item.title,
-            description: item.description,
-            status: item.status.toLowerCase(), // WAITING -> waiting, PROGRESS -> progress
-            user: `${item.currentParticipants} / ${item.maxParticipants}명`,
-            time: item.startedAt ? formatTime(item.startedAt) : '방장시작',
-            tag: item.debateType === 'PROS_CONS' ? '찬/반' : '자유',
-            // 추가 필드들
-            hostNickname: item.hostNickname,
-            articleId: item.articleId,
-            articleTitle: item.articleTitle,
-            prosCount: item.prosCount,
-            consCount: item.consCount,
-            participantCount: item.participantCount,
-            observerCount: item.observerCount,
-            createdAt: item.createdAt,
-            startedAt: item.startedAt,
-            timeLimit: item.timeLimit,
-            isPopular: item.isPopular,
-            creatorSide: item.creatorSide,
-            proMaxCount: item.proMaxCount,
-            conMaxCount: item.conMaxCount
-        }));
+        return apiData.map(item => {
+            // 찬/반 토론일 경우 찬성 + 반대 참가자 수로 계산
+            const totalParticipants = item.debateType === 'PROS_CONS'
+                ? (item.prosCount || 0) + (item.consCount || 0)
+                : item.currentParticipants || 0;
+
+            // 찬/반 토론일 경우 최대 참가자 수도 찬성 + 반대 최대값으로 계산
+            const maxParticipants = item.debateType === 'PROS_CONS'
+                ? (item.proMaxCount || 0) + (item.conMaxCount || 0)
+                : item.maxParticipants || 0;
+
+            return {
+                id: item.id,
+                title: item.title,
+                description: item.description,
+                status: item.status.toLowerCase(), // WAITING -> waiting, PROGRESS -> progress
+                user: `${totalParticipants} / ${maxParticipants}명`,
+                time: item.startedAt ? formatTime(item.startedAt) : '방장시작',
+                tag: item.debateType === 'PROS_CONS' ? '찬/반' : '자유',
+                // 추가 필드들
+                hostNickname: item.hostNickname,
+                articleId: item.articleId,
+                articleTitle: item.articleTitle,
+                prosCount: item.prosCount,
+                consCount: item.consCount,
+                participantCount: item.participantCount,
+                observerCount: item.observerCount,
+                createdAt: item.createdAt,
+                startedAt: item.startedAt,
+                timeLimit: item.timeLimit,
+                isPopular: item.isPopular,
+                creatorSide: item.creatorSide,
+                proMaxCount: item.proMaxCount,
+                conMaxCount: item.conMaxCount
+            };
+        });
     }, []);
 
     // 시간 포맷팅 함수
