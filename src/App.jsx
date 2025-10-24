@@ -10,7 +10,7 @@ import NewsListPage from './pages/news/NewsListPage';
 import NewsDetailPage from './pages/news/NewsDetailPage';
 import AgoraCreatePage from './pages/agora/AgoraCreatePage';
 import AgoraChatPage from './pages/agora/AgoraChatPage';
-import AgoraDetailPage from './pages/agora/AgoraDetailPage';
+import AgoraDetailPage from './pages/Agora/AgoraDetailPage';
 import SignInPage from './pages/user/SignInPage';
 import SignUpPage from './pages/user/SignUpPage';
 import AgoraParticipatePage from './pages/agora/AgoraParticipatePage'
