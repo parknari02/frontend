@@ -19,13 +19,21 @@ const AgoraCreatePage = () => {
     creatorSide: 'PROS',
     proMaxCount: 5,
     conMaxCount: 5,
-    maxParticipants: 20,
+    maxParticipants: 5,
   });
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  const handleNumberChange = (field, value) => {
+    const numValue = value === '' ? '' : parseInt(value) || '';
+    setFormData(prev => ({
+      ...prev,
+      [field]: numValue
     }));
   };
 
@@ -156,31 +164,47 @@ const AgoraCreatePage = () => {
             </LabelWrapper>
 
             <div style={{ display: "flex", gap: "25px" }}>
-              <CheckBoxWrapper>
+              <SideWrapper>
                 <Label small>찬성</Label>
-                <CheckMark
-                  onClick={() => handleCreatorSideChange('PROS')}
-                  $isSelected={formData.creatorSide === 'PROS'}
-                >
-                  <span>{formData.proMaxCount}명</span>
-                  <IconWrapper>
-                    <img src={formData.creatorSide === 'PROS' ? checkActiveIcon : checkIcon} alt="user profile icon" />
-                  </IconWrapper>
-                </CheckMark>
-              </CheckBoxWrapper>
+                <SideContainer>
+                  <CountInput
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={formData.proMaxCount}
+                    onChange={(e) => handleNumberChange('proMaxCount', e.target.value)}
+                  />
+                  <CheckMark
+                    onClick={() => handleCreatorSideChange('PROS')}
+                    $isSelected={formData.creatorSide === 'PROS'}
+                  >
+                    <IconWrapper>
+                      <img src={formData.creatorSide === 'PROS' ? checkActiveIcon : checkIcon} alt="user profile icon" />
+                    </IconWrapper>
+                  </CheckMark>
+                </SideContainer>
+              </SideWrapper>
 
-              <CheckBoxWrapper>
+              <SideWrapper>
                 <Label small>반대</Label>
-                <CheckMark
-                  onClick={() => handleCreatorSideChange('CONS')}
-                  $isSelected={formData.creatorSide === 'CONS'}
-                >
-                  <span>{formData.conMaxCount}명</span>
-                  <IconWrapper>
-                    <img src={formData.creatorSide === 'CONS' ? checkActiveIcon : checkIcon} alt="user profile icon" />
-                  </IconWrapper>
-                </CheckMark>
-              </CheckBoxWrapper>
+                <SideContainer>
+                  <CountInput
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={formData.conMaxCount}
+                    onChange={(e) => handleNumberChange('conMaxCount', e.target.value)}
+                  />
+                  <CheckMark
+                    onClick={() => handleCreatorSideChange('CONS')}
+                    $isSelected={formData.creatorSide === 'CONS'}
+                  >
+                    <IconWrapper>
+                      <img src={formData.creatorSide === 'CONS' ? checkActiveIcon : checkIcon} alt="user profile icon" />
+                    </IconWrapper>
+                  </CheckMark>
+                </SideContainer>
+              </SideWrapper>
             </div>
           </>
         ) : (
@@ -192,7 +216,7 @@ const AgoraCreatePage = () => {
               type="number"
               placeholder="전체 참여 인원을 입력하세요."
               value={formData.maxParticipants}
-              onChange={(e) => handleInputChange('maxParticipants', parseInt(e.target.value) || 0)}
+              onChange={(e) => handleNumberChange('maxParticipants', e.target.value)}
             />
           </>
         )}
@@ -220,7 +244,7 @@ const FormContainer = styled.div`
 
 const LabelWrapper = styled.div`
   display: flex;
-  align-items: baseline; /* 텍스트끼리 기준선 맞추기 */
+  align-items: baseline;
   gap: 4px;
 `;
 
@@ -237,8 +261,6 @@ const Label = styled.div`
     small &&
     `font-size: 12px;`}
 `;
-
-
 
 const Input = styled.input`
   width: 100%;
@@ -257,15 +279,6 @@ const Input = styled.input`
   ${({ long }) =>
     long &&
     `min-height: 67px;`}
-`;
-
-const Textarea = styled.textarea`
-  width: 100%;
-  padding: 12px;
-  min-height: 80px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 14px;
 `;
 
 const RadioGroup = styled.div`
@@ -308,22 +321,6 @@ const SmallText = styled.p`
   margin-top: -10px;
 `;
 
-const Row = styled.div`
-  display: flex;
-  gap: 20px;
-`;
-
-const CheckBox = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-
-  input {
-    accent-color: #7a5df0;
-  }
-`;
-
 const SubmitButton = styled.button`
   margin-top: 80px;
   padding: 10px 24px;
@@ -342,35 +339,58 @@ const SubmitButton = styled.button`
   }
 `;
 
-const CheckBoxWrapper = styled.div`
+const SideWrapper = styled.div`
   flex: 1;
   display: flex;
-  gap: 5px;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const SideContainer = styled.div`
+  display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
+`;
 
-  input {
-    display: none;
+const CountInput = styled.input`
+  flex: 1;
+  padding: 8px 12px;
+  background: #F4F4F4;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #333;
+  text-align: center;
+  outline: none;
+  
+  &:focus {
+    border-color: #5a3ef0;
+    background: #fff;
   }
-
-  /* 체크되었을 때 스타일 */
-  input:checked + span {
-    background: #eae6ff;
-    color: #5a3ef0;
-    border: 1px solid #5a3ef0;
+  
+  /* 숫자 입력 스피너 제거 */
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  /* Firefox에서 스피너 제거 */
+  &[type=number] {
+    -moz-appearance: textfield;
   }
 `;
 
 const CheckMark = styled.div`
   display: flex;
-  flex: 1;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
   background: ${({ $isSelected }) => $isSelected ? '#eae6ff' : '#F4F4F4'};
   border-radius: 4px;
-  font-size: 12px;
-  font-weight: 300;
   color: ${({ $isSelected }) => $isSelected ? '#5a3ef0' : '#A2A2A2'};
   border: ${({ $isSelected }) => $isSelected ? '1px solid #5a3ef0' : '1px solid transparent'};
   cursor: pointer;
@@ -378,10 +398,9 @@ const CheckMark = styled.div`
 `;
 
 const IconWrapper = styled.div`
-    width: 22px;
-    height: 22px;
-    display: flex;'
-    font-size: 18px;
-    align-items: center;
-    justify-content: center;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
