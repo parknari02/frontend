@@ -5,7 +5,7 @@ import { AgoraStatusProvider } from './contexts/AgoraStatusContext';
 import NewsPage from './pages/news/NewsPage';
 import AgoraPage from './pages/agora/AgoraPage';
 import TrendPage from './pages/trend/TrendPage';
-import MyPage from './pages/My/MyPage';
+import MyPage from './pages/my/MyPage';
 import NewsListPage from './pages/news/NewsListPage';
 import NewsDetailPage from './pages/news/NewsDetailPage';
 import AgoraCreatePage from './pages/agora/AgoraCreatePage';
