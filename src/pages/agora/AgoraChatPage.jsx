@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 import Header from "../../components/common/Header";
-import handIcon from '../../assets/icons/hand.svg';
 import sendIcon from '../../assets/icons/send.svg';
 import megaphoneIcon from '../../assets/icons/megaphone.svg';
 import { useState, useEffect, useRef, useCallback, useContext } from "react";
@@ -28,9 +27,7 @@ const AgoraChatPage = () => {
         sendChatMessage,
         currentUserId,
         connectWebSocket,
-        disconnectWebSocket,
-        speechQueue,
-        requestQueue
+        disconnectWebSocket
     } = context;
 
     /*
@@ -50,8 +47,6 @@ const AgoraChatPage = () => {
     const [typedText, setTypedText] = useState('');
     const [isDebateStarted, setIsDebateStarted] = useState(false);
     const [hideSubmissionMessages, setHideSubmissionMessages] = useState(false);
-    const [isMyTurn, setIsMyTurn] = useState(false);
-    const [isRequested, setIsRequested] = useState(false);
 
     // 페이지 로드 시 WebSocket 연결 시도
     useEffect(() => {
@@ -85,28 +80,6 @@ const AgoraChatPage = () => {
         }
     };
 
-    // 발언 요청
-    // 발언권 요청
-    const handleRequestSpeech = async () => {
-        if (isConnected && !isRequested) {
-            try {
-                await api.post(`/api/agoras/${agoraId}/speech-request`, {
-                    agoraId: parseInt(agoraId),
-                    speechType: "MAIN_DEBATE",
-                    requestMessage: "발언권을 요청합니다."
-                });
-                setIsRequested(true);
-                console.log('발언권 요청 완료');
-
-                // 발언권 요청 후 대기열 조회
-                setTimeout(() => {
-                    requestQueue();
-                }, 1000);
-            } catch (error) {
-                console.error('발언권 요청 실패:', error);
-            }
-        }
-    };
 
     // 나가기 핸들러
     const handleBackClick = () => {
@@ -206,22 +179,6 @@ const AgoraChatPage = () => {
         setSubmittedSpeeches(speechMessages.length);
     }, [messages]);
 
-    // 대기열 큐 처리
-    useEffect(() => {
-        if (speechQueue.length > 0 && currentUserId) {
-            const currentSpeaker = speechQueue.find(item => item.isCurrentSpeaker);
-            const myQueueItem = speechQueue.find(item => item.username === `user${currentUserId}`);
-
-            if (currentSpeaker && myQueueItem) {
-                // 내가 현재 발언자인지 확인
-                setIsMyTurn(currentSpeaker.username === `user${currentUserId}`);
-            } else {
-                setIsMyTurn(false);
-            }
-        } else {
-            setIsMyTurn(false);
-        }
-    }, [speechQueue, currentUserId]);
 
     return (
         <PageContainer>
@@ -356,24 +313,17 @@ const AgoraChatPage = () => {
                     </span>
                 </TimeInfo>
                 <InputWrapper>
-                    <SpeechButton
-                        onClick={handleRequestSpeech}
-                        disabled={!isConnected || isRequested}
-                        $isRequested={isRequested}
-                    >
-                        <img src={handIcon} alt="speech request" />
-                    </SpeechButton>
                     <Input
-                        placeholder={isMyTurn ? "의견을 전달해보세요" : "발언권을 요청해주세요"}
+                        placeholder="의견을 전달해보세요"
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        disabled={!isConnected || !isMyTurn}
+                        disabled={!isConnected}
                     />
                     <FooterButton
                         variant="primary"
                         onClick={handleSendMessage}
-                        disabled={!isConnected || !isMyTurn}
+                        disabled={!isConnected}
                     >
                         <img src={sendIcon} alt="send icon" />
                     </FooterButton>
@@ -638,34 +588,6 @@ const InputWrapper = styled.div`
     background: rgba(203, 203, 255, 0.1);
     width: 100%;
     padding: 12px 8px;
-`;
-
-// 발언 요청 버튼
-const SpeechButton = styled.button`
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 8px;
-    background: ${props => props.$isRequested ? '#FF6B6B' : '#4DB985'};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    
-    img {
-        width: 20px;
-        height: 20px;
-        filter: brightness(0) invert(1);
-    }
-    
-    &:hover {
-        background: ${props => props.$isRequested ? '#FF5252' : '#3DA875'};
-    }
-    
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
 `;
 
 const Input = styled.input`

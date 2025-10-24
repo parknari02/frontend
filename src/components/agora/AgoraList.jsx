@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import AgoraCard from './AgoraCard';
 import api from '../../api/api';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import addButton from '../../assets/icons/add_button.svg';
 //import { useNavigate } from 'react-router-dom'; // React Router 사용 시
 
 const AgoraList = ({ onSelect, onCreate }) => {
@@ -96,7 +97,7 @@ const AgoraList = ({ onSelect, onCreate }) => {
         <AgoraListContainer >
             <AgoraListHeader>
                 <AgoraListTitle>진행중인 아고라</AgoraListTitle>
-                <CreateButton onClick={onCreate}>아고라 생성하기</CreateButton>
+                <img src={addButton} alt="add button" onClick={onCreate} style={{ cursor: 'pointer' }} />
             </AgoraListHeader>
             <AgoraCardList>
                 {agoraList.map((agora, index) => (

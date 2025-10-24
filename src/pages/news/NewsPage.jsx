@@ -75,6 +75,7 @@ const NewsPage = () => {
         ) : (
           recommendArticles.map((article, index) => (
             <ListItem
+              categoryVisible={false}
               key={article.id}
               id={article.id}
               time={formatDate(article.publishDate)}

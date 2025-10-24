@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-const ListItem = ({ category, title, preview, time, isLast = false, id }) => {
+const ListItem = ({ category, title, preview, time, isLast = false, id, categoryVisible = true }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -12,7 +12,7 @@ const ListItem = ({ category, title, preview, time, isLast = false, id }) => {
 
   return (
     <Item isLast={isLast} onClick={handleClick}>
-      <LeftLabel>{category}</LeftLabel>
+      {categoryVisible && <LeftLabel>{category}</LeftLabel>}
       <RightCol>
         {time && (
           <TitleRow>

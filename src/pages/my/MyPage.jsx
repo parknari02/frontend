@@ -8,7 +8,6 @@ import RecommendationCard from "../../components/news/main/RecommendationCard";
 import api from "../../api/api";
 import { useEffect, useState } from "react";
 
-
 const MyPage = () => {
   const [scrapArticles, setScrapArticles] = useState([]);
   const [userStats, setUserStats] = useState(null);
@@ -75,7 +74,7 @@ const MyPage = () => {
         <ProfileCard>
           <Avatar src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=400" />
           <ProfileTexts>
-            <JoinedDate>2025. 8. 10. 가입</JoinedDate>
+            <JoinedDate>2025. 10. 24. 가입</JoinedDate>
             <Nickname>{userStats?.nickName || '사용자'}</Nickname>
             <Interests>
               {userStats ?
@@ -87,7 +86,7 @@ const MyPage = () => {
         </ProfileCard>
         <ContentSection>
           <InterestChart userStats={userStats} />
-          <RecommendationCard />
+          <RecommendationCard userStats={userStats} />
         </ContentSection>
         <ListCard>
           {scrapArticles.length > 0 ? scrapArticles.map((article, index) => (
@@ -166,6 +165,15 @@ const Nickname = styled.h3`
 const Interests = styled.span`
   font-size: 12px;
   font-weight: 300;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const InterestIcon = styled.img`
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 `;
 
 /* 리스트 카드 */
