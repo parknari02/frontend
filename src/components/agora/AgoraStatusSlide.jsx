@@ -1,10 +1,9 @@
 import styled from 'styled-components';
 import { useState, useEffect } from 'react';
 import api from '../../api/api';
-import clockIcon from '../../assets/icons/clock.svg';
-import userProfileIcon from '../../assets/icons/userProfile.svg';
 import { useAgoraStatus } from '../../contexts/AgoraStatusContext';
 import { useNavigate } from 'react-router-dom';
+import userProfileIcon from '../../assets/icons/userProfileGray.svg';
 
 const AgoraStatusModal = ({ isOpen, onClose }) => {
   const [agoraStatus, setAgoraStatus] = useState(null);
@@ -62,6 +61,44 @@ const AgoraStatusModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const leaveAgora = async () => {
+    if (!agoraStatus?.agoraId) return;
+
+    try {
+      const res = await api.delete(`/api/agoras/${agoraStatus.agoraId}/leave`);
+      console.log('아고라 나가기 성공:', res.data);
+
+      // 성공 시 모달 닫기
+      onClose();
+
+      // 상태 새로고침
+      getAgoraStatus();
+    } catch (error) {
+      console.error('아고라 나가기 실패:', error);
+    }
+  };
+
+  const changeSide = async () => {
+    if (!agoraStatus?.agoraId) return;
+
+    try {
+      // 현재 진영의 반대 진영으로 변경
+      const currentSide = agoraStatus.participants.find(p => p.username === localStorage.getItem('username'))?.side;
+      const newSide = currentSide === 'PROS' ? 'CONS' : 'PROS';
+
+      const res = await api.patch(`/api/agoras/${agoraStatus.agoraId}/side`, {
+        agoraId: agoraStatus.agoraId,
+        side: newSide
+      });
+
+      console.log('진영 변경 성공:', res.data);
+
+      // 상태 새로고침
+      getAgoraStatus();
+    } catch (error) {
+      console.error('진영 변경 실패:', error);
+    }
+  };
 
   // 열릴 때 데이터 로드
   useEffect(() => {
@@ -114,6 +151,22 @@ const AgoraStatusModal = ({ isOpen, onClose }) => {
     return agoraStatus.currentUserHost;
   };
 
+  // 현재 사용자의 진영 확인
+  const getCurrentUserSide = () => {
+    if (!agoraStatus?.participants) return null;
+    const currentUsername = localStorage.getItem('username');
+    const currentParticipant = agoraStatus.participants.find(p => p.username === currentUsername);
+    return currentParticipant?.side;
+  };
+
+  // 진영 변경 버튼 텍스트 생성
+  const getChangeSideButtonText = () => {
+    const currentSide = getCurrentUserSide();
+    if (currentSide === 'PROS') return '반대측으로 이동';
+    if (currentSide === 'CONS') return '찬성측으로 이동';
+    return '진영 선택';
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -135,75 +188,86 @@ const AgoraStatusModal = ({ isOpen, onClose }) => {
               <AgoraInfoCard>
                 <AgoraHeader>
                   <AgoraTitle>{agoraStatus.title}</AgoraTitle>
-                  <StatusBadge $status={agoraStatus.status}>
-                    {getStatusText(agoraStatus.status)}
-                  </StatusBadge>
+                  <AgoraStatus $status={agoraStatus.status.toLowerCase()}>{getStatusText(agoraStatus.status)}</AgoraStatus>
                 </AgoraHeader>
-
                 <AgoraDescription>
                   {agoraStatus.description}
                 </AgoraDescription>
-
+                <div style={{ height: '1px', backgroundColor: '#E0E0E0', margin: '16px 0' }}></div>
                 <AgoraDetails>
                   <DetailRow>
-                    <IconWrapper>
-                      <img src={userProfileIcon} alt="user icon" />
-                    </IconWrapper>
                     <DetailText>
-                      총 참여자: {agoraStatus.totalParticipants}명 (찬성: {agoraStatus.proCount}명, 반대: {agoraStatus.conCount}명)
+                      총 참여자: {agoraStatus.totalParticipants}명
+                      {agoraStatus.debateType !== 'FREE_DEBATE' && (
+                        <> (찬성: {agoraStatus.proCount}명, 반대: {agoraStatus.conCount}명)</>
+                      )}
                     </DetailText>
                   </DetailRow>
-
                   <DetailRow>
-                    <IconWrapper>
-                      <img src={userProfileIcon} alt="host icon" />
-                    </IconWrapper>
                     <DetailText>
                       방장: {agoraStatus.hostUsername}
                     </DetailText>
                   </DetailRow>
 
-                  {!agoraStatus.canStartDebate && (
-                    <DetailRow>
-                      <IconWrapper>
-                        <img src={clockIcon} alt="warning icon" />
-                      </IconWrapper>
-                      <DetailText>
-                        {agoraStatus.cannotStartReason}
-                      </DetailText>
-                    </DetailRow>
-                  )}
                 </AgoraDetails>
-
+                <div style={{ height: '1px', backgroundColor: '#E0E0E0', margin: '16px 0' }}></div>
                 <ParticipantInfo>
                   <ParticipantLabel>참여자 목록</ParticipantLabel>
                   {agoraStatus.participants.map((participant) => (
                     <ParticipantRow key={participant.participantId}>
-                      <ParticipantCount>
-                        {participant.username}
-                        {participant.host && ' (방장)'}
-                        {participant.side && ` (${participant.side})`}
-                        {participant.ready && ' (준비완료)'}
-                      </ParticipantCount>
+                      <ParticipantItem>
+                        <img src={userProfileIcon} alt="user profile icon" />
+                        <ParticipantCount>
+                          {participant.username}
+                          {participant.host && ' (방장)'}
+                          {participant.side && ` (${participant.side})`}
+                        </ParticipantCount>
+                      </ParticipantItem>
                     </ParticipantRow>
                   ))}
                 </ParticipantInfo>
               </AgoraInfoCard>
-
+              {!agoraStatus.canStartDebate && (
+                <DetailRow>
+                  <DetailText>
+                    {agoraStatus.cannotStartReason}
+                  </DetailText>
+                </DetailRow>
+              )}
               <ActionButtons>
                 {agoraStatus.status === 'WAITING' && (
-                  <ActionButton
-                    $variant="primary"
-                    onClick={startAgora}
-                    disabled={!agoraStatus.canStartDebate}
-                  >
-                    {isCurrentUserHost() ? '아고라 시작하기' : '아고라 입장하기'}
-                  </ActionButton>
+                  <>
+                    {isCurrentUserHost() ? (
+                      <HostButtonRow>
+                        <ActionButton
+                          $variant="primary"
+                          onClick={startAgora}
+                          disabled={!agoraStatus.canStartDebate}
+                        >
+                          아고라 시작하기
+                        </ActionButton>
+                        {agoraStatus.debateType === 'PROS_CONS' && (
+                          <ActionButton
+                            $variant="secondary"
+                            onClick={changeSide}
+                          >
+                            {getChangeSideButtonText()}
+                          </ActionButton>
+                        )}
+                      </HostButtonRow>
+                    ) : agoraStatus.debateType === 'PROS_CONS' ? (
+                      <ActionButton
+                        $variant="primary"
+                        onClick={changeSide}
+                      >
+                        {getChangeSideButtonText()}
+                      </ActionButton>
+                    ) : (
+                      null
+                    )}
+                  </>
                 )}
-                {agoraStatus.status !== 'WAITING' && agoraStatus.status !== 'ENDED' && (
-                  <ActionButton $variant="primary">토론 참여하기</ActionButton>
-                )}
-                <ActionButton $variant="secondary">상세 정보 보기</ActionButton>
+                <ActionButton $variant="secondary" onClick={leaveAgora}>아고라 나가기</ActionButton>
               </ActionButtons>
             </StatusContent>
           ) : (
@@ -221,6 +285,23 @@ const AgoraStatusModal = ({ isOpen, onClose }) => {
 export default AgoraStatusModal;
 
 /* ============== styles ============== */
+
+const AgoraStatus = styled.span`
+    font-weight: 300;
+    font-size: 10px;
+    color: ${({ $status }) => $status === 'waiting' ? '#4DB985' : '#F83001'};
+
+    &::before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+        background-color: ${({ $status }) => $status === 'waiting' ? '#4DB985' : '#F83001'};
+  }
+    }
+`;
 
 const Overlay = styled.div`
   position: fixed;
@@ -318,19 +399,6 @@ const AgoraTitle = styled.h3`
   flex: 1; margin-right: 12px;
 `;
 
-const StatusBadge = styled.div`
-  padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;
-  background-color: ${({ $status }) => {
-    switch ($status) {
-      case 'WAITING': return '#4DB985';
-      case 'PROGRESS': return '#F83001';
-      case 'ENDED': return '#9E9E9E';
-      default: return '#9E9E9E';
-    }
-  }};
-  color: #fff;
-`;
-
 const AgoraDescription = styled.p`
   font-size: 14px; color: ${({ theme }) => theme.gray};
   line-height: 1.5; margin-bottom: 16px;
@@ -342,10 +410,6 @@ const AgoraDetails = styled.div`
 
 const DetailRow = styled.div`
   display: flex; align-items: center; gap: 8px;
-`;
-
-const IconWrapper = styled.div`
-  width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
 `;
 
 const DetailText = styled.span`
@@ -360,17 +424,33 @@ const ParticipantRow = styled.div`
   display: flex; flex-direction: column; gap: 4px;
 `;
 
+const ParticipantItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const UserIcon = styled.img`
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+`;
+
 const ParticipantLabel = styled.span`
-  font-size: 12px; color: ${({ theme }) => theme.lightGray};
+  font-size: 14px; color: ${({ theme }) => theme.gray};
   font-weight: 600;
 `;
 
 const ParticipantCount = styled.span`
-  font-size: 14px; font-weight: 500; color: ${({ theme }) => theme.gray};
+  font-size: 14px; color: ${({ theme }) => theme.gray};
 `;
 
 const ActionButtons = styled.div`
   display: flex; flex-direction: column; gap: 12px;
+`;
+
+const HostButtonRow = styled.div`
+  display: flex; gap: 8px;
 `;
 
 const ActionButton = styled.button`

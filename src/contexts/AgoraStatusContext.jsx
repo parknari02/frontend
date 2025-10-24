@@ -28,6 +28,7 @@ export const AgoraStatusProvider = ({ children }) => {
     const [timer, setTimer] = useState(null);
     const [summary, setSummary] = useState(null);
     const [participants, setParticipants] = useState([]);
+    const [speechQueue, setSpeechQueue] = useState([]);
 
     const stompClientRef = useRef(null);
     const heartbeatIntervalRef = useRef(null);
@@ -201,6 +202,19 @@ export const AgoraStatusProvider = ({ children }) => {
         stompClient.subscribe(`/topic/agora/${agoraId}/closing/speech`, () => {
         });
 
+        // 발언 대기열 구독
+        stompClient.subscribe(`/queue/agora/${agoraId}/queue/response`, (message) => {
+            const data = JSON.parse(message.body);
+            console.log('발언 대기열 데이터:', data);
+
+            if (data.eventType === 'QUEUE_REQUEST') {
+                // 발언 대기열 데이터 처리
+                setSpeechQueue(data.data);
+            } else if (data.eventType === 'ERROR_OCCURRED') {
+                console.error('대기열 조회 실패:', data.message);
+            }
+        });
+
         // 대기실 토론 시작 알림 구독
         stompClient.subscribe(`/topic/agora/${agoraId}/waiting-room`, (message) => {
             const data = JSON.parse(message.body);
@@ -297,6 +311,13 @@ export const AgoraStatusProvider = ({ children }) => {
         }
     };
 
+    // 발언 대기열 조회 요청
+    const requestQueue = () => {
+        if (stompClientRef.current && stompClientRef.current.connected && currentUserId) {
+            stompClientRef.current.send(`/app/agora/${currentAgoraId}/queue/request`, {}, currentUserId.toString());
+        }
+    };
+
     // 타이머 동기화 요청
     const syncTimer = () => {
         if (stompClientRef.current && stompClientRef.current.connected) {
@@ -337,6 +358,7 @@ export const AgoraStatusProvider = ({ children }) => {
         timer,
         summary,
         participants,
+        speechQueue,
 
         // WebSocket 메서드
         connectWebSocket,
@@ -344,6 +366,7 @@ export const AgoraStatusProvider = ({ children }) => {
         sendChatMessage,
         requestSpeech,
         cancelSpeech,
+        requestQueue,
         syncTimer,
         stompClientRef,
     };
@@ -354,3 +377,6 @@ export const AgoraStatusProvider = ({ children }) => {
         </AgoraStatusContext.Provider>
     );
 };
+
+// Context를 export하여 사용
+export { AgoraStatusContext };

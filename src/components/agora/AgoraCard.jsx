@@ -59,7 +59,7 @@ const AgoraCardTitle = styled.span`
 const AgoraStatus = styled.span`
     font-weight: 300;
     font-size: 10px;
-    color: ${({ $status }) => $status === 'progress' ? '#F83001' : '#4DB985'};
+    color: ${({ $status }) => $status === 'waiting' ? '#4DB985' : '#F83001'};
 
     &::before {
         content: "";
@@ -68,7 +68,7 @@ const AgoraStatus = styled.span`
         height: 8px;
         border-radius: 50%;
         margin-right: 6px;
-        background-color: ${({ $status }) => $status === 'progress' ? '#F83001' : '#4DB985'};
+        background-color: ${({ $status }) => $status === 'waiting' ? '#4DB985' : '#F83001'};
   }
     }
 `;

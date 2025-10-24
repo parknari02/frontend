@@ -192,7 +192,7 @@ const AgoraStartModal = ({ isOpen, onClose, agora }) => {
                 <TopicSection>
                     <TopicHeader>
                         <TopicTitle>주제 | <b>{agoraDetail.title}</b></TopicTitle>
-                        <AgoraStatus status={agoraDetail.status.toLowerCase()}>{getStatusText(agoraDetail.status)}</AgoraStatus>
+                        <AgoraStatus $status={agoraDetail.status.toLowerCase()}>{getStatusText(agoraDetail.status)}</AgoraStatus>
                     </TopicHeader>
                     <TopicDescription>{agoraDetail.description}</TopicDescription>
                 </TopicSection>

@@ -14,6 +14,7 @@ const TrendPage = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [issueKeyword, setIssueKeyword] = useState('폭우');
   const [page, setPage] = useState(1);
   const observer = useRef();
 
@@ -93,13 +94,15 @@ const TrendPage = () => {
     try {
       console.log("getTrendStats 시작");
       const res = await api.get("/api/stats/trend");
-      console.log("getTrendStats 성공:", res.data);
+      if (res.data.isSuccess) {
+        setIssueKeyword(res.data.response.keywordCount[0].keyword);
+      }
     } catch (err) {
       console.error("getTrendStats 실패:", err);
+    } finally {
+      setLoading(false);
     }
   }
-
-
   useEffect(() => {
     getTrendData(1, true);
     getTrendStats();
@@ -151,8 +154,8 @@ const TrendPage = () => {
       <ContentSection>
         <IssueKeywordCard>
           <CardTitle>이슈 키워드</CardTitle>
-          <KeywordIcon>☔</KeywordIcon>
-          <KeywordText>폭우</KeywordText>
+          <KeywordIcon>💡</KeywordIcon>
+          <KeywordText>{issueKeyword}</KeywordText>
         </IssueKeywordCard>
         <TrendAnalysisCard
           title="트렌드 분석"

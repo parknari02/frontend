@@ -4,17 +4,23 @@ import Header from "../../components/common/Header";
 import handIcon from '../../assets/icons/hand.svg';
 import sendIcon from '../../assets/icons/send.svg';
 import megaphoneIcon from '../../assets/icons/megaphone.svg';
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AgoraChatStartModal from "../../components/agora/modals/AgoraChatStartModal";
 import AgoraChatSpeechModal from "../../components/agora/modals/AgoraChatSpeechModal";
 import AgoraChatEndModal from "../../components/agora/modals/AgoraChatEndModal";
-import { useAgoraStatus } from "../../contexts/AgoraStatusContext";
+import { AgoraStatusContext } from "../../contexts/AgoraStatusContext";
 import api from '../../api/api';
 
 const AgoraChatPage = () => {
     const { agoraId } = useParams();
     const navigate = useNavigate();
+    const context = useContext(AgoraStatusContext);
+
+    if (!context) {
+        throw new Error('AgoraChatPage must be used within an AgoraStatusProvider');
+    }
+
     const {
         isConnected,
         messages,
@@ -22,9 +28,10 @@ const AgoraChatPage = () => {
         sendChatMessage,
         currentUserId,
         connectWebSocket,
-        requestSpeech,
-        disconnectWebSocket
-    } = useAgoraStatus();
+        disconnectWebSocket,
+        speechQueue,
+        requestQueue
+    } = context;
 
     /*
         - "start"	AgoraChatStartModal 열림
@@ -43,6 +50,8 @@ const AgoraChatPage = () => {
     const [typedText, setTypedText] = useState('');
     const [isDebateStarted, setIsDebateStarted] = useState(false);
     const [hideSubmissionMessages, setHideSubmissionMessages] = useState(false);
+    const [isMyTurn, setIsMyTurn] = useState(false);
+    const [isRequested, setIsRequested] = useState(false);
 
     // 페이지 로드 시 WebSocket 연결 시도
     useEffect(() => {
@@ -77,9 +86,25 @@ const AgoraChatPage = () => {
     };
 
     // 발언 요청
-    const handleRequestSpeech = () => {
-        if (isConnected) {
-            requestSpeech();
+    // 발언권 요청
+    const handleRequestSpeech = async () => {
+        if (isConnected && !isRequested) {
+            try {
+                await api.post(`/api/agoras/${agoraId}/speech-request`, {
+                    agoraId: parseInt(agoraId),
+                    speechType: "MAIN_DEBATE",
+                    requestMessage: "발언권을 요청합니다."
+                });
+                setIsRequested(true);
+                console.log('발언권 요청 완료');
+
+                // 발언권 요청 후 대기열 조회
+                setTimeout(() => {
+                    requestQueue();
+                }, 1000);
+            } catch (error) {
+                console.error('발언권 요청 실패:', error);
+            }
         }
     };
 
@@ -180,6 +205,23 @@ const AgoraChatPage = () => {
         console.log('입장발언 제출 메시지들:', speechMessages);
         setSubmittedSpeeches(speechMessages.length);
     }, [messages]);
+
+    // 대기열 큐 처리
+    useEffect(() => {
+        if (speechQueue.length > 0 && currentUserId) {
+            const currentSpeaker = speechQueue.find(item => item.isCurrentSpeaker);
+            const myQueueItem = speechQueue.find(item => item.username === `user${currentUserId}`);
+
+            if (currentSpeaker && myQueueItem) {
+                // 내가 현재 발언자인지 확인
+                setIsMyTurn(currentSpeaker.username === `user${currentUserId}`);
+            } else {
+                setIsMyTurn(false);
+            }
+        } else {
+            setIsMyTurn(false);
+        }
+    }, [speechQueue, currentUserId]);
 
     return (
         <PageContainer>
@@ -314,17 +356,25 @@ const AgoraChatPage = () => {
                     </span>
                 </TimeInfo>
                 <InputWrapper>
-                    <SpeechButton onClick={handleRequestSpeech} disabled={!isConnected}>
+                    <SpeechButton
+                        onClick={handleRequestSpeech}
+                        disabled={!isConnected || isRequested}
+                        $isRequested={isRequested}
+                    >
                         <img src={handIcon} alt="speech request" />
                     </SpeechButton>
                     <Input
-                        placeholder="의견을 전달해보세요"
+                        placeholder={isMyTurn ? "의견을 전달해보세요" : "발언권을 요청해주세요"}
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        disabled={!isConnected}
+                        disabled={!isConnected || !isMyTurn}
                     />
-                    <FooterButton variant="primary" onClick={handleSendMessage} disabled={!isConnected}>
+                    <FooterButton
+                        variant="primary"
+                        onClick={handleSendMessage}
+                        disabled={!isConnected || !isMyTurn}
+                    >
                         <img src={sendIcon} alt="send icon" />
                     </FooterButton>
                 </InputWrapper>
@@ -596,7 +646,7 @@ const SpeechButton = styled.button`
     height: 40px;
     border: none;
     border-radius: 8px;
-    background: #4DB985;
+    background: ${props => props.$isRequested ? '#FF6B6B' : '#4DB985'};
     display: flex;
     align-items: center;
     justify-content: center;
@@ -609,7 +659,7 @@ const SpeechButton = styled.button`
     }
     
     &:hover {
-        background: #3DA875;
+        background: ${props => props.$isRequested ? '#FF5252' : '#3DA875'};
     }
     
     &:disabled {
