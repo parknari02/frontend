@@ -23,7 +23,6 @@ const AgoraChatPage = () => {
     const {
         isConnected,
         messages,
-        timer,
         sendChatMessage,
         currentUserId,
         connectWebSocket,
@@ -47,6 +46,13 @@ const AgoraChatPage = () => {
     const [typedText, setTypedText] = useState('');
     const [isDebateStarted, setIsDebateStarted] = useState(false);
     const [hideSubmissionMessages, setHideSubmissionMessages] = useState(false);
+    const [isFreeDebate, setIsFreeDebate] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
+    const [debateTimer, setDebateTimer] = useState(60); // 본토론 1분 = 60초
+    const [freeDebateTimer, setFreeDebateTimer] = useState(60); // 자유토론 1분 = 60초
+    const [closingTimer, setClosingTimer] = useState(30); // 클로징 30초
+    const [reportData, setReportData] = useState(null);
+    const [participants, setParticipants] = useState([]);
 
     // 페이지 로드 시 WebSocket 연결 시도
     useEffect(() => {
@@ -89,19 +95,23 @@ const AgoraChatPage = () => {
         navigate(-1);
     };
 
-
-    // 타이머 포맷팅
-    const formatTime = (seconds) => {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    // 참여자 진영 찾기 함수
+    const getParticipantSide = (userId) => {
+        const participant = participants.find(p => p.userId === parseInt(userId));
+        return participant?.side || null;
     };
+
+
 
     const getAgoraStatus = useCallback(async () => {
         try {
             const res = await api.get(`/api/agoras/${agoraId}`);
             console.log('아고라 상세 정보:', res.data);
             setAgoraDetail(res.data);
+            // 참여자 목록 저장
+            if (res.data.response?.participants) {
+                setParticipants(res.data.response.participants);
+            }
         } catch (error) {
             console.error('아고라 상세 정보 조회 실패:', error);
         }
@@ -123,6 +133,17 @@ const AgoraChatPage = () => {
             setTypedText(''); // 타이핑 시작
         } catch (error) {
             console.error('입장발언 요약 조회 실패:', error);
+        }
+    }, [agoraId]);
+
+    // 토론 리포트 조회
+    const fetchReport = useCallback(async () => {
+        try {
+            const res = await api.post(`/api/agoras/${agoraId}/report`);
+            console.log('토론 리포트:', res.data);
+            setReportData(res.data.response);
+        } catch (error) {
+            console.error('토론 리포트 조회 실패:', error);
         }
     }, [agoraId]);
 
@@ -179,6 +200,64 @@ const AgoraChatPage = () => {
         setSubmittedSpeeches(speechMessages.length);
     }, [messages]);
 
+    // 본토론 3분 타이머
+    useEffect(() => {
+        if (isDebateStarted && !isFreeDebate) {
+            const interval = setInterval(() => {
+                setDebateTimer(prev => {
+                    if (prev <= 1) {
+                        // 3분 완료 시 자유토론으로 전환
+                        setIsFreeDebate(true);
+                        clearInterval(interval);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            return () => clearInterval(interval);
+        }
+    }, [isDebateStarted, isFreeDebate]);
+
+    // 자유토론 1분 타이머
+    useEffect(() => {
+        if (isFreeDebate && !isClosing) {
+            const interval = setInterval(() => {
+                setFreeDebateTimer(prev => {
+                    if (prev <= 1) {
+                        // 1분 완료 시 클로징으로 전환
+                        setIsClosing(true);
+                        clearInterval(interval);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            return () => clearInterval(interval);
+        }
+    }, [isFreeDebate, isClosing]);
+
+    // 클로징 30초 타이머
+    useEffect(() => {
+        if (isClosing) {
+            const interval = setInterval(() => {
+                setClosingTimer(prev => {
+                    if (prev <= 1) {
+                        // 30초 완료 시 리포트 조회 후 end 모달 표시
+                        fetchReport().then(() => {
+                            setActiveModal("end");
+                        });
+                        clearInterval(interval);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            return () => clearInterval(interval);
+        }
+    }, [isClosing, fetchReport]);
 
     return (
         <PageContainer>
@@ -191,12 +270,38 @@ const AgoraChatPage = () => {
                         <IconWrapper>
                             <img src={megaphoneIcon} alt="megaphone icon" />
                         </IconWrapper>
-                        <NoticeTitle>다음은 본토론 시간입니다.</NoticeTitle>
+                        <NoticeTitle>
+                            {isClosing ? '클로징 시간입니다.' :
+                                isFreeDebate ? '자유토론 시간입니다.' :
+                                    '다음은 본토론 시간입니다.'}
+                        </NoticeTitle>
                     </div>
                     <NoticeDesc>
-                        좌측의 발언권 요청 버튼을 눌러 발언권을 신청하세요. <br />
-                        발언 시간은 최대 1분이며 자신의 턴에 1회만 발언 가능합니다.
+                        {isClosing ? (
+                            <>
+                                클로징 시간입니다. <br />
+                                마지막 정리 발언을 해주세요.
+                            </>
+                        ) : isFreeDebate ? (
+                            <>
+                                자유토론 시간입니다. <br />
+                                자유롭게 의견을 나누어보세요.
+                            </>
+                        ) : (
+                            <>
+                                본토론은 1분 동안 진행됩니다. <br />
+                                입장 발언에 대한 반박 위주로 진행해주세요.
+                            </>
+                        )}
                     </NoticeDesc>
+                    <TimeInfo>
+                        남은 시간: {isClosing
+                            ? `${Math.floor(closingTimer / 60)}:${(closingTimer % 60).toString().padStart(2, '0')}`
+                            : isFreeDebate
+                                ? `${Math.floor(freeDebateTimer / 60)}:${(freeDebateTimer % 60).toString().padStart(2, '0')}`
+                                : `${Math.floor(debateTimer / 60)}:${(debateTimer % 60).toString().padStart(2, '0')}`
+                        }
+                    </TimeInfo>
                 </NoticeBox>
             )}
 
@@ -289,7 +394,15 @@ const AgoraChatPage = () => {
                             )}
                             <MessageContent $isMyMessage={isMyMessage}>
                                 {!isMyMessage && (
-                                    <SenderName>{message.senderName || '익명의 사용자'}</SenderName>
+                                    <SenderName>
+                                        {message.senderName || '익명의 사용자'}
+                                        {agoraDetail?.response?.debateType === 'PROS_CONS' && (
+                                            <SideTag $side={getParticipantSide(message.sender)}>
+                                                {getParticipantSide(message.sender) === 'PROS' ? '찬' :
+                                                    getParticipantSide(message.sender) === 'CONS' ? '반' : ''}
+                                            </SideTag>
+                                        )}
+                                    </SenderName>
                                 )}
                                 <MessageBubble $isMyMessage={isMyMessage}>
                                     <MessageText $isMyMessage={isMyMessage}>{message.content}</MessageText>
@@ -300,18 +413,7 @@ const AgoraChatPage = () => {
                     );
                 })}
             </ChatArea>
-
-
             <Footer>
-                <TimeInfo>
-                    <span className="current">
-                        {timer ? formatTime(timer.remainingSeconds) : '00:00'}
-                    </span>
-                    /
-                    <span className="total">
-                        {timer ? formatTime(timer.totalSeconds) : '01:00'}
-                    </span>
-                </TimeInfo>
                 <InputWrapper>
                     <Input
                         placeholder="의견을 전달해보세요"
@@ -346,7 +448,8 @@ const AgoraChatPage = () => {
             {activeModal === "end" && (
                 <AgoraChatEndModal
                     isOpen
-                    onClose={() => setActiveModal(null)}
+                    onClose={handleBackClick}
+                    reportData={reportData}
                 />
             )}
         </PageContainer>
@@ -500,6 +603,20 @@ const SenderName = styled.div`
     color: #666;
     margin-bottom: 8px;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+`;
+
+// 진영 태그
+const SideTag = styled.span`
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 8px;
+    background: ${props => props.$side === 'PROS' ? '#E8F5E8' : '#FFE8E8'};
+    color: ${props => props.$side === 'PROS' ? '#4CAF50' : '#F44336'};
+    border: 1px solid ${props => props.$side === 'PROS' ? '#4CAF50' : '#F44336'};
 `;
 
 // 메시지 버블
@@ -566,19 +683,8 @@ const TimeInfo = styled.div`
   font-weight: 500;
   text-align: right;
   width: 100%;
-  padding: 0 16px;
   letter-spacing: 0.02em;
-  color: #A2A2A2; /* 회색 */
-
-  .current {
-    color: #A2A2A2; /* 회색 */
-    margin-right: 4px;
-  }
-
-  .total {
-    color: #444; /* 검정 */
-    margin-left: 4px;
-  }
+  color: ${({ theme }) => theme.mainLight};  
 `;
 
 const InputWrapper = styled.div`
