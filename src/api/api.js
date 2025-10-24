@@ -1,6 +1,22 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+// 환경별 API URL 설정
+const getBaseURL = () => {
+  // 환경변수가 설정되어 있으면 사용
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // 프로덕션 환경에서는 Vercel 프록시 사용
+  if (import.meta.env.PROD) {
+    return ""; // 빈 문자열로 설정하면 현재 도메인 사용
+  }
+  
+  // 개발 환경에서는 직접 HTTP 서버 사용
+  return "http://13.209.157.48:8080";
+};
+
+const BASE_URL = getBaseURL();
 
 const api = axios.create({
   baseURL: BASE_URL,
