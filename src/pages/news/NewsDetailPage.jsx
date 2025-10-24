@@ -7,6 +7,7 @@ import back from "../../assets/icons/back.png";
 import bookmark_outline from "../../assets/icons/bookmark_outline.png";
 import bookmark_filled from "../../assets/icons/bookmark_filled.png";
 import AiButton from '../../components/news/main/AiButton';
+import { useNavigate } from 'react-router-dom';
 
 import { useParams } from 'react-router-dom';
 import api from '../../api/api';
@@ -30,6 +31,7 @@ AI 윤리와 데이터 보안 문제에 대한 논의도 활발히 진행 중입
 
 
 const NewsDetailPage = () => {
+  const navigate = useNavigate();
   const [bookmarked, setBookmarked] = useState(false);
 
   const [openSummary, setOpenSummary] = useState(false);
@@ -82,6 +84,11 @@ const NewsDetailPage = () => {
   useEffect(() => {
     if (articleId) getArticle();
   }, [articleId])
+
+  // 페이지 진입 시 스크롤을 맨 위로 이동
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [articleId]);
 
   // 기사 핵심 단어 불러오기 
   async function getMainKeywords() {
@@ -137,7 +144,7 @@ const NewsDetailPage = () => {
   return (
     <>
       <HeaderContainer>
-        <BackIcon src={back} alt="뒤로가기" />
+        <BackIcon src={back} alt="뒤로가기" onClick={() => navigate(-1)} />
         <Title>news</Title>
         <BookmarkImg
           src={bookmarked ? bookmark_filled : bookmark_outline}
